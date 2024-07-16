@@ -22,7 +22,6 @@ import { FirebaseError } from 'firebase/app';
       .min(8, 'パスワードは8文字以上で入力してください'),
   });
 
-
 interface User {
   username: string;
   email: string;
