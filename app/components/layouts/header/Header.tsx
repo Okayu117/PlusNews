@@ -1,4 +1,4 @@
-import { Box, Button, Center, Flex, Img, Stack, Text } from '@chakra-ui/react'
+import { Box, Flex, Img, Stack } from '@chakra-ui/react'
 import React from 'react'
 import SignInButton from './SignInButton'
 import SignUpButton from './SignUpButton'

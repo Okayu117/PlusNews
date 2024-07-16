@@ -87,10 +87,9 @@ const SignIn = () => {
                   />
                   <Text color='red'>{errors.password?.message as React.ReactNode}</Text>
                 </Stack>
-                {/* <Button type="submit" backgroundColor='rgba(102,205,170,0.7)' width='180px' height='45px' borderRadius='30px'>
+                <Button type="submit" backgroundColor='rgba(102,205,170,0.7)' width='180px' height='45px' borderRadius='30px'>
                   <Text color='white'>Sign In</Text>
-                </Button> */}
-                <button type="submit">Sign In</button>
+                </Button>
               </FormControl>
               <Box>
                 <Link

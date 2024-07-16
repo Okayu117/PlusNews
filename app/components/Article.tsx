@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import moment from 'moment';
 import { Box } from '@chakra-ui/react';
