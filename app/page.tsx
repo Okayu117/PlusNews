@@ -19,7 +19,8 @@ export default function Home() {
 
   const getNews = async () => {
     setRefreshing(true);
-    const url = "https://newsapi.org/v2/everything?q=keyword&apiKey=efc074766a5c4172a0827dc468134c64";
+    const apiKey = process.env.NEXT_PUBLIC_NEW_API_KEY;
+    const url = `https://newsapi.org/v2/everything?q=keyword&apiKey=${apiKey}`;
     try {
       const result = await axios.get(url);
       setArticles(result.data.articles);
