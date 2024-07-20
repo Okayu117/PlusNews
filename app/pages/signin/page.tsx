@@ -8,8 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { FirebaseError } from 'firebase/app';
 
-
-export const validationSchema = z.object({
+const validationSchema = z.object({
   email: z
     .string()
     .email('メールアドレスの形式が正しくありません'),
@@ -23,7 +22,7 @@ interface User {
   password: string;
 }
 
-const SignIn = () => {
+export default function SignInPage() {
 
   const router = useRouter();
   const toast = useToast();
@@ -107,5 +106,3 @@ const SignIn = () => {
     </>
   )
 }
-
-export default SignIn

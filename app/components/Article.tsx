@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import moment from 'moment';
 import { Box } from '@chakra-ui/react';
+import Image from 'next/image';
 
 interface ArticleProps {
     article: {
@@ -23,7 +24,7 @@ const Article: React.FC<ArticleProps> = ({ article }) => {
     return (
         <Link href={url} passHref>
             <Box>
-              <img src={urlToImage || defaultImage} alt="Article Image" className="w-full h-auto" />
+            <Image src="/path/to/image.jpg" alt="description" width={500} height={300} />
               <div className="p-4">
                 <p className="mb-2 text-base">{description || 'Read more...'}</p>
                 <div className="h-px bg-gray-200 my-2"></div>
