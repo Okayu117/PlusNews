@@ -5,7 +5,7 @@ import React from 'react'
 const SignInButton = () => {
   return (
     <>
-      <Link href='/signin'>
+      <Link href='/pages/signin'>
         <Button colorScheme='teal' variant='ghost'>
           Sign In
         </Button>

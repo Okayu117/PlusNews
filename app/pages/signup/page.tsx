@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { FirebaseError } from 'firebase/app';
+import { supabase } from '@/utils/supabase/supabaseClient';
 
 
 
@@ -44,14 +45,51 @@ const SignUp = () => {
     resolver: zodResolver(validationSchema),
   });
 
-
-
   const handleSignUp = async(formData: User) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
       const user = userCredential.user;
       await updateProfile(user, { displayName: formData.username });
-      router.push('/');
+
+      // Supabaseでユーザー名の重複チェック
+      const { data: existingUser, error: checkError } = await supabase
+        .from("users")
+        .select("username")
+        .eq("username", formData.username);
+
+      if (checkError) {
+        console.error("Error checking username in Supabase:", checkError);
+        throw new Error("Error checking username in Supabase");
+      }
+
+      if (existingUser && existingUser.length > 0) {
+        toast({
+          title: 'ユーザー名の重複エラー',
+          description: 'このユーザー名は既に使用されています',
+          status: 'error',
+          duration: 6000,
+          isClosable: true,
+        });
+        return;
+      }
+
+     // Supabaseにユーザー情報を保存
+      const { data, error } = await supabase
+        .from("users")
+        .insert({
+          username: formData.username,
+          email: formData.email,
+          password: formData.password // 実際にはハッシュ化されたパスワードを保存することを推奨します
+        });
+
+    if (error) {
+      console.error("Error inserting user into Supabase:", error);
+      throw new Error("Error inserting user into Supabase");
+    }
+
+    console.log("User successfully inserted into Supabase:", data);
+
+    router.push('/');
     } catch (error) {
       if (error instanceof FirebaseError) {
         if (error.code === 'auth/email-already-in-use') {

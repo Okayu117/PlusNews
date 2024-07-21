@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { FirebaseError } from 'firebase/app';
+import { supabase } from '@/utils/supabase/supabaseClient';
 
 
 export const validationSchema = z.object({
@@ -38,13 +39,23 @@ const SignIn = () => {
   });
 
 
-  const handleSignIn = (formData: User) => {
-    signInWithEmailAndPassword(auth, formData.email, formData.password)
-      .then(() => {
-        // console.log('Sign in success');
-        router.push('/');
-      })
-      .catch((e) => {
+  const handleSignIn = async (formData: User) => {
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password)
+      const user = userCredential.user;
+
+      // Supabaseにユーザー情報を保存
+      const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", user.uid)
+      .single();
+      if (error || !data) {
+        console.error("Error fetching user from Supabase:", error);
+      }
+
+      router.push('/');
+    } catch (e) {
         if (e instanceof FirebaseError) {
           toast({
             title: 'サインインに失敗しました',
@@ -53,7 +64,7 @@ const SignIn = () => {
             isClosable: true,
           });
         }
-      });
+      };
   };
 
   return (
