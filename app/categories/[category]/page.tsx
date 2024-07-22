@@ -1,6 +1,5 @@
-'use client'
-import { useRouter } from 'next/router';
 import React, { useState, useEffect, useRef } from 'react';
+import { useParams } from 'next/navigation';
 import Article from '../../components/Article';
 import axios from 'axios';
 import { Box, Divider, Flex, Stack, Spinner } from '@chakra-ui/react';
@@ -14,8 +13,8 @@ interface ArticleType {
 }
 
 const CategoryPage: React.FC = () => {
-  const router = useRouter();
-  const { category } = router.query;
+  const params = useParams();
+  const category = params.category || 'ALL';
   const [articles, setArticles] = useState<ArticleType[]>([]);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [page, setPage] = useState<number>(1);
@@ -24,11 +23,14 @@ const CategoryPage: React.FC = () => {
   const getNews = async (pageNum: number) => {
     setRefreshing(true);
     const apiKey = process.env.NEXT_PUBLIC_NEW_API_KEY;
-    const query = category === '' ? 'keyword' : category;
-    const url = `https://newsapi.org/v2/everything?country=jp&q=${query}&pageSize=10&page=${pageNum}&apiKey=${apiKey}`;
-    console.log(url);
+    let url = `https://newsapi.org/v2/everything?pageSize=10&page=${pageNum}&apiKey=${apiKey}`;
+    if (category && category !== 'ALL') {
+      url += `&q=${category}`;
+    }
+    console.log("Fetching news with URL:", url); // デバッグ用
     try {
       const result = await axios.get(url);
+      console.log("Fetched articles:", result.data.articles); // デバッグ用
       setArticles((prevArticles) => [...prevArticles, ...result.data.articles]);
       setRefreshing(false);
     } catch (e) {
