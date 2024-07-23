@@ -11,6 +11,7 @@ interface ArticleType {
   publishedAt: string;
   urlToImage: string;
   url: string;
+  title: string //型エラーを解消するために追加
 }
 
 const Home: React.FC = () => {
@@ -44,7 +45,9 @@ const Home: React.FC = () => {
 
     let url = `https://newsapi.org/v2/top-headlines?pageSize=10&page=${pageNum}&apiKey=${apiKey}&country=jp`;
     if (category && category !== 'ALL') {
-      url += `&category=${encodeURIComponent(category)}`;
+      // 以下のようにURLを組み立てると、カテゴリーに関する記事を取得できる
+      // 一部のカテゴリーは日本のニュースが少ないため、記事が取得できない場合があるみたいです。。。
+      url += `&category=${category}`;
     }
     console.log("Fetching news with URL:", url); // デバッグ用
 
@@ -102,9 +105,9 @@ const Home: React.FC = () => {
             categoryKey={category.key}
             isSelected={selectedCategory === category.label}
             onClick={() => {
-              setSelectedCategory(category.label);
+              // apiを叩くときにselectedCategoryを使用するので、category.keyをセットして英語版のカテゴリーに変更してURLを組み立てる
+              setSelectedCategory(category.key);
               setPage(1);
-              
             }}
           />
         ))}
