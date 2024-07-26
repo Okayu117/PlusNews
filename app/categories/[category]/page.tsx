@@ -20,9 +20,11 @@ const CategoryPage: React.FC = () => {
   const [page, setPage] = useState<number>(1);
   const observerRef = useRef<HTMLDivElement | null>(null);
 
+  
+
   const getNews = async (pageNum: number) => {
     setRefreshing(true);
-    const apiKey = process.env.NEXT_PUBLIC_NEW_API_KEY;
+    const apiKey = process.env.NEXT_PUBLIC_NEWS_API_KEY;
     let url = `https://newsapi.org/v2/everything?pageSize=10&page=${pageNum}&apiKey=${apiKey}`;
     if (category && category !== 'ALL') {
       url += `&q=${category}`;

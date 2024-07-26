@@ -11,7 +11,9 @@ interface ArticleType {
   publishedAt: string;
   urlToImage: string;
   url: string;
-  title: string //型エラーを解消するために追加
+  title: string;
+  sentimentScore?: number; // 追加
+  sentimentMagnitude?: number; // 追加
 }
 
 const Home: React.FC = () => {
@@ -27,16 +29,38 @@ const Home: React.FC = () => {
     { label: 'ライフハック', key: 'lifehack' }
   ];
 
-
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [articles, setArticles] = useState<ArticleType[]>([]);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [page, setPage] = useState<number>(1);
   const observerRef = useRef<HTMLDivElement | null>(null);
 
+  console.log('NEXT_PUBLIC_NEWS_API_KEY:', process.env.NEXT_PUBLIC_NEWS_API_KEY); // 追加
+
+  const analyzeSentiment = async (text: string) => {
+    try {
+      const response = await fetch('/api/analyzeSentiment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ text })
+      });
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      console.log('Sentiment analysis result:', data); // 追加
+      return { score: data.score, magnitude: data.magnitude };
+    } catch (error) {
+      console.error('Error analyzing sentiment:', error);
+      return { score: 0, magnitude: 0 };
+    }
+  };
+
   const getNews = async (pageNum: number, category: string) => {
     setRefreshing(true);
-    const apiKey = process.env.NEXT_PUBLIC_NEW_API_KEY;
+    const apiKey = process.env.NEXT_PUBLIC_NEWS_API_KEY;
     if (!apiKey) {
       console.error("API key is not set.");
       setRefreshing(false);
@@ -45,20 +69,22 @@ const Home: React.FC = () => {
 
     let url = `https://newsapi.org/v2/top-headlines?pageSize=10&page=${pageNum}&apiKey=${apiKey}&country=jp`;
     if (category && category !== 'ALL') {
-      // 以下のようにURLを組み立てると、カテゴリーに関する記事を取得できる
-      // 一部のカテゴリーは日本のニュースが少ないため、記事が取得できない場合があるみたいです。。。
       url += `&category=${category}`;
     }
-    console.log("Fetching news with URL:", url); // デバッグ用
 
     try {
       const result = await axios.get(url);
-      console.log("Fetched articles:", result.data.articles); // デバッグ用
-      if (pageNum === 1) {
-        setArticles(result.data.articles);
-      } else {
-        setArticles((prevArticles) => [...prevArticles, ...result.data.articles]);
-      }
+      const articlesWithSentiment = await Promise.all(result.data.articles.map(async (article: ArticleType) => {
+        const { description, title } = article;
+        const combinedText = `${title} ${description}`;
+        const { score, magnitude } = await analyzeSentiment(combinedText);
+        console.log('Article:', article.title, 'Sentiment Score:', score, 'Magnitude:', magnitude); // 追加
+        return { ...article, sentimentScore: score, sentimentMagnitude: magnitude };
+      }));
+
+      // フィルタリングを無効にして全記事表示
+      setArticles((prevArticles) => pageNum === 1 ? articlesWithSentiment : [...prevArticles, ...articlesWithSentiment]);
+
       setRefreshing(false);
     } catch (e) {
       setRefreshing(false);
@@ -103,9 +129,8 @@ const Home: React.FC = () => {
             key={category.key}
             category={category.label}
             categoryKey={category.key}
-            isSelected={selectedCategory === category.label}
+            isSelected={selectedCategory === category.key}
             onClick={() => {
-              // apiを叩くときにselectedCategoryを使用するので、category.keyをセットして英語版のカテゴリーに変更してURLを組み立てる
               setSelectedCategory(category.key);
               setPage(1);
             }}
