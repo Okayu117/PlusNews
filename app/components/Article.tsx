@@ -2,49 +2,45 @@ import React from 'react';
 import Link from 'next/link';
 import moment from 'moment';
 import { Box, Flex, Img, Text } from '@chakra-ui/react';
+import { HiAnnotation } from "react-icons/hi";
+import { ArticleType } from '../../app/page';
 
 interface ArticleProps {
-  article: {
-    description: string;
-    publishedAt: string;
-    source: {
-      name: string;
-    };
-    urlToImage: string;
-    url: string;
-    title: string;
-  };
+  article: ArticleType;
 }
 
 const Article: React.FC<ArticleProps> = ({ article }) => {
-  const { description, publishedAt, source, urlToImage, url, title } = article;
+  const { id, description, publishedAt, source, urlToImage, url, title } = article;
   const time = moment(publishedAt || moment.now()).fromNow();
   const defaultImage = 'https://wallpaper.wiki/wp-content/uploads/2017/04/wallpaper.wiki-Images-HD-Diamond-Pattern-PIC-WPB009691.jpg';
-  const articleDescription = description || 'Read more...';
+
+    // IDをコンソールに出力
+    console.log('Article ID:', id);
 
   return (
-    <>
-      <Box w="100%">
-        <Link href={url} passHref>
-          <Flex
-            p='15px'
-            gap='15px'
-            h="200px"
-            alignItems="center"
-          >
-            <Box w='30%' h='150px' overflow='hidden' flexShrink={0}>
-              <Img w='100%' h='150px' objectFit='cover' src={urlToImage ?? defaultImage} alt="Article Image" />
-            </Box>
-            <Box flex='1' h='150px' overflow='hidden'>
+    <Box w="100%">
+        <Flex
+          p='15px'
+          gap='15px'
+          h="200px"
+          alignItems="center"
+        >
+          <Box w='30%' h='150px' overflow='hidden' flexShrink={0}>
+            <Img w='100%' h='150px' objectFit='cover' src={urlToImage ?? defaultImage} alt="Article Image" />
+          </Box>
+          <Box flex='1' h='150px' overflow='hidden'>
+            <a href={url} target="_blank" rel="noopener noreferrer">
               <Text>{title}</Text>
-              <Box>{description}</Box>
-              <Text>{source.name.toUpperCase()}</Text>
-              <Text>{time}</Text>
-            </Box>
-          </Flex>
-        </Link>
-      </Box>
-    </>
+            </a>
+            <Box>{description}</Box>
+            <Text>{source?.name ? source.name.toUpperCase() : 'Unknown Source'}</Text>
+            <Text>{time}</Text>
+            <Link href={`/articles/${id}/comments`} passHref>
+              <HiAnnotation />
+            </Link>
+          </Box>
+        </Flex>
+    </Box>
   );
 };
 

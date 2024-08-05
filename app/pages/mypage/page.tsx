@@ -1,162 +1,206 @@
 'use client'
-import { auth } from '@/utils/firebase/firebaseConfg'
-import { Box, Button, FormControl, Input, Stack, Text, Flex, useToast } from '@chakra-ui/react'
-import { useForm } from "react-hook-form"
-import { z } from 'zod'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect, useState } from 'react'
-import { onAuthStateChanged } from 'firebase/auth'
-import { supabase } from '@/utils/supabase/supabaseClient'
+import React, { useState, useEffect, useRef } from 'react';
+import { Flex, Stack, Box, Divider, Spinner, Button, FormControl, Input, Text, useToast } from '@chakra-ui/react';
+import Article from '../../components/Article';
+import { collection, query, getDocs, addDoc, orderBy, limit, startAfter } from 'firebase/firestore';
+import { db } from '../../../utils/firebase/firebaseConfg';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import useAuth from '../../hooks/useAuth';
 
-const validationSchema = z.object({
-  username: z
-    .string()
-    .min(2, { message: '2文字以上入力してください' })
-    .max(20, { message: '20文字以下で入力してください' }),
-})
-
-interface User {
-  id: string
-  username: string
-  email: string
-  password: string
+interface ArticleType {
+  id: string;
+  source: { name: string };
+  description: string;
+  publishedAt: string;
+  urlToImage: string;
+  url: string;
+  title: string;
 }
 
-const MyPage = () => {
-  const [user, setUser] = useState<User | null>(null)
-  const [isEditing, setIsEditing] = useState(false)
-  const toast = useToast()
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<User>({
-    mode: 'onChange',
-    resolver: zodResolver(validationSchema),
-  })
+interface CommentType {
+  id?: string;
+  articleId: string;
+  text: string;
+  userId: string;
+  userName: string;
+}
+
+const validationSchema = z.object({
+  text: z.string().min(1, 'コメントを入力してください').max(200, 'コメントは200文字以内で入力してください'),
+});
+
+const Home: React.FC = () => {
+  const { user, loading } = useAuth();
+  const [articles, setArticles] = useState<ArticleType[]>([]);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [lastVisible, setLastVisible] = useState<any>(null);
+  const observerRef = useRef<HTMLDivElement | null>(null);
+  const toast = useToast();
+
+  const getNews = async (loadMore = false) => {
+    setRefreshing(true);
+    try {
+      const articlesCollection = collection(db, 'articles');
+      let articlesQuery = query(articlesCollection, orderBy('publishedAt', 'desc'), limit(10));
+      if (loadMore && lastVisible) {
+        articlesQuery = query(articlesCollection, orderBy('publishedAt', 'desc'), startAfter(lastVisible), limit(10));
+      }
+      const articleDocs = await getDocs(articlesQuery);
+      // デバッグ: Firestoreから取得したデータの確認
+      console.log('Fetched documents:', articleDocs.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+
+
+      // デバッグ: Firestoreから取得したデータの確認
+      articleDocs.forEach((doc) => {
+        console.log('Document ID:', doc.id);
+        console.log('Document Data:', doc.data());
+      });
+
+      const newArticles = articleDocs.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as ArticleType[];
+
+      // 記事データのコンソール出力
+      console.log('Fetched Articles:', newArticles);
+
+      setArticles((prevArticles) => loadMore ? [...prevArticles, ...newArticles] : newArticles);
+      setLastVisible(articleDocs.docs[articleDocs.docs.length - 1]);
+
+      setRefreshing(false);
+    } catch (e) {
+      setRefreshing(false);
+      console.error('Error fetching news:', e);
+    }
+  };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        const { data: userData, error } = await supabase
-          .from('users')
-          .select('*')
-          .eq('email', firebaseUser.email)
-          .single()
-
-        if (error) {
-          console.error('Error fetching user data:', error)
-        } else {
-          setUser(userData)
-          reset(userData)
-        }
-      } else {
-        setUser(null)
-      }
-    })
-
-    return () => unsubscribe()
-  }, [])
-
-  const handleEditClick = () => {
-    setIsEditing(true)
-  }
-
-  const handleCancelClick = () => {
-    setIsEditing(false)
-    reset(user ? user : {})
-  }
-
-  const handleSaveClick = async (formData: User) => {
-    if (user) {
-      const updates = { username: formData.username }
-
-      // Supabaseの更新
-      const { data, error: supabaseError } = await supabase
-        .from('users')
-        .update(updates)
-        .eq('id', user.id)
-        console.log('Supabase update response:', data)
-      if (supabaseError) {
-        console.error('Error updating Supabase user data:', supabaseError)
-        toast({
-          title: 'Supabaseのユーザー情報の更新に失敗しました',
-          status: 'error',
-          duration: 6000,
-          isClosable: true,
-        })
-      } else {
-        console.log('Supabase update response:', data)
-        setUser({ ...user, ...updates })
-        setIsEditing(false)
-        toast({
-          title: 'ユーザー情報を更新しました',
-          status: 'success',
-          duration: 6000,
-          isClosable: true,
-        })
-      }
+    if (!loading && user) {
+      getNews();
     }
-  }
+  }, [loading, user]);
 
-  if (!user) {
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          getNews(true);
+        }
+      },
+      { threshold: 1.0 }
+    );
+    if (observerRef.current) {
+      observer.observe(observerRef.current);
+    }
+    return () => {
+      if (observerRef.current) {
+        observer.unobserve(observerRef.current);
+      }
+    };
+  }, []);
+
+  const CommentForm: React.FC<{ articleId: string }> = ({ articleId }) => {
+    const { register, handleSubmit, formState: { errors }, reset } = useForm<CommentType>({
+      mode: 'onChange',
+      resolver: zodResolver(validationSchema),
+    });
+
+    const onSubmit = async (data: CommentType) => {
+      try {
+        await addDoc(collection(db, 'articles', articleId, 'comments'), {
+          text: data.text,
+          articleId: articleId,
+          userId: user.uid,
+          userName: user.displayName || 'Anonymous',
+          createdAt: new Date(),
+        });
+        reset();
+        toast({
+          title: 'コメントを追加しました',
+          status: 'success',
+          duration: 5000,
+          isClosable: true,
+        });
+      } catch (e) {
+        console.error('Error adding comment:', e);
+        toast({
+          title: 'コメントの追加に失敗しました',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+      }
+    };
+
     return (
-      <>
-        <Stack maxWidth='70%' m='auto' textAlign='center' justifyContent='center'>
-          <Flex pt='50px' flexDirection='column' alignItems='center'>
-            <Text fontSize='30px'>Loading...</Text>
-          </Flex>
-        </Stack>
-      </>
-    )
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <FormControl isInvalid={!!errors.text}>
+          <Input
+            variant='filled'
+            mt='5px'
+            mb='5px'
+            borderRadius='5px'
+            placeholder='コメントを入力'
+            {...register('text')}
+          />
+          {errors.text && <Text color='red'>{errors.text.message}</Text>}
+          <Button type='submit' colorScheme='teal'>コメントを追加</Button>
+        </FormControl>
+      </form>
+    );
+  };
+
+  const CommentList: React.FC<{ articleId: string }> = ({ articleId }) => {
+    const [comments, setComments] = useState<CommentType[]>([]);
+
+    useEffect(() => {
+      const fetchComments = async () => {
+        const commentsCollection = collection(db, 'articles', articleId, 'comments');
+        const commentsSnapshot = await getDocs(query(commentsCollection, orderBy('createdAt', 'asc')));
+        const commentsData = commentsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as CommentType[];
+        setComments(commentsData);
+      };
+      fetchComments();
+    }, [articleId]);
+
+    return (
+      <Box>
+        {comments.map((comment) => (
+          <Box key={comment.id} p='2' bg='gray.100' my='2' borderRadius='md'>
+            <Text fontWeight='bold'>{comment.userName}</Text>
+            <Text>{comment.text}</Text>
+          </Box>
+        ))}
+      </Box>
+    );
+  };
+
+  if (loading) {
+    return (
+      <Flex justifyContent='center' alignItems='center' height='100vh'>
+        <Spinner size='xl' />
+      </Flex>
+    );
   }
 
   return (
-    <>
-      <Stack maxWidth='70%' m='auto' textAlign='center' justifyContent='center'>
-        <Flex pt='50px' flexDirection='column' alignItems='center'>
-          <Flex alignItems="center">
-            <Text fontSize='30px'>Myページ</Text>
-          </Flex>
-          <form onSubmit={handleSubmit(handleSaveClick)}>
-            <Box>
-              <Flex alignItems="center">
-                <Text fontSize='20px'>ユーザー名</Text>
-                {isEditing ? (
-                  <FormControl maxWidth='400px'>
-                    <Input
-                      variant='filled'
-                      mt='5px'
-                      mb='5px'
-                      borderRadius='5px'
-                      type="text"
-                      placeholder="名前"
-                      id="username"
-                      {...register("username")}
-                    />
-                    <Text color='red'>{errors.username?.message as React.ReactNode}</Text>
-                  </FormControl>
-                ) : (
-                  <>
-                    <Text>{user.username}</Text>
-                    <Button onClick={handleEditClick} ml="10px">編集</Button>
-                  </>
-                )}
-              </Flex>
-            </Box>
-            <Box>
-              <Text fontSize='20px'>メールアドレス</Text>
-              <Text>{user.email}</Text>
-            </Box>
-            <Box>
-              <Text fontSize='20px'>パスワード</Text>
-              <Text>{user.password}</Text>
-            </Box>
-            <Box pt='20px'>
-              <Button type="submit" isDisabled={!isEditing} mr="10px">保存</Button>
-              <Button onClick={handleCancelClick} isDisabled={!isEditing}>キャンセル</Button>
-            </Box>
-          </form>
+    <Stack w='100%' alignItems='center'>
+      <Box p='40px' w='90%'>
+        <Flex flexDirection='column' alignItems='center' gap='5px'>
+          {articles.length === 0 && !refreshing && <p>No articles found.</p>}
+          {articles.map((article, index) => (
+            <React.Fragment key={article.id}>
+              <Article article={article} />
+              <CommentForm articleId={article.id} />
+              <CommentList articleId={article.id} />
+              {index < articles.length - 1 && <Divider borderColor='gray.700' />}
+            </React.Fragment>
+          ))}
+          {refreshing && <Spinner />}
+          <div ref={observerRef}></div>
         </Flex>
-      </Stack>
-    </>
-  )
-}
+      </Box>
+    </Stack>
+  );
+};
 
-export default MyPage
+export default Home;

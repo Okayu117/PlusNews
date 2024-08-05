@@ -1,6 +1,6 @@
 'use client'
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { auth } from '@/utils/firebase/firebaseConfg';
+import { auth, db } from '@/utils/firebase/firebaseConfg';
 import { Box, Button, FormControl, Input, Link, Stack, Text, Flex, useToast } from '@chakra-ui/react'
 import { useForm } from "react-hook-form"
 import { z } from 'zod';
@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { FirebaseError } from 'firebase/app';
 import { supabase } from '@/utils/supabase/supabaseClient';
+import { doc, setDoc } from 'firebase/firestore';
 
 
 
@@ -45,49 +46,28 @@ const SignUp = () => {
     resolver: zodResolver(validationSchema),
   });
 
-  const handleSignUp = async(formData: User) => {
+  const handleSignUp = async (formData: User) => {
+    const { email, password, username } = formData;
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      await updateProfile(user, { displayName: formData.username });
 
-      // Supabaseでユーザー名の重複チェック
-      const { data: existingUser, error: checkError } = await supabase
-        .from("users")
-        .select("username")
-        .eq("username", formData.username);
+      // ユーザーのプロファイルを更新
+      await updateProfile(user, { displayName: username });
 
-      if (checkError) {
-        console.error("Error checking username in Supabase:", checkError);
-        throw new Error("Error checking username in Supabase");
-      }
+      // Firestoreにユーザーデータを保存
+      await setDoc(doc(db, 'users', user.uid), {
+        id: user.uid,
+        username: username,
+        email: email,
+      });
 
-      if (existingUser && existingUser.length > 0) {
-        toast({
-          title: 'ユーザー名の重複エラー',
-          description: 'このユーザー名は既に使用されています',
-          status: 'error',
-          duration: 6000,
-          isClosable: true,
-        });
-        return;
-      }
-
-     // Supabaseにユーザー情報を保存
-      const { data, error } = await supabase
-        .from("users")
-        .insert({
-          username: formData.username,
-          email: formData.email,
-          password: formData.password // 実際にはハッシュ化されたパスワードを保存することを推奨します
-        });
-
-    if (error) {
-      console.error("Error inserting user into Supabase:", error);
-      throw new Error("Error inserting user into Supabase");
-    }
-
-    console.log("User successfully inserted into Supabase:", data);
+      toast({
+        title: 'アカウントが作成されました',
+        status: 'success',
+        duration: 6000,
+        isClosable: true,
+      });
 
     router.push('/');
     } catch (error) {
