@@ -1,17 +1,15 @@
 'use client'
 import React, { useState, useEffect, useRef } from 'react';
-import { Flex, Stack, Box, Divider, Spinner } from '@chakra-ui/react';
+import { Flex, Stack, Box, Divider, Spinner, Text } from '@chakra-ui/react';
 import Article from './components/Article';
 import axios from 'axios';
 
 export interface ArticleType {
-  id: string;
-  source: { name: string };
-  description: string;
-  publishedAt: string;
-  urlToImage: string;
-  url: string;
   title: string;
+  source: string;
+  publishedAt: string;
+  url: string;
+  id: string;
   sentimentScore?: number;
   sentimentMagnitude?: number;
 }
@@ -20,24 +18,23 @@ const Home: React.FC = () => {
   const [articles, setArticles] = useState<ArticleType[]>([]);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [page, setPage] = useState<number>(1);
+  const [hasMore, setHasMore] = useState<boolean>(true);
   const observerRef = useRef<HTMLDivElement | null>(null);
-
-  console.log('NEXT_PUBLIC_NEWS_API_KEY:', process.env.NEXT_PUBLIC_NEWS_API_KEY);
+  const endRef = useRef<HTMLDivElement | null>(null);
 
   const analyzeSentiment = async (text: string) => {
     try {
       const response = await fetch('/api/analyzeSentiment', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ text })
+        body: JSON.stringify({ text }),
       });
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
       const data = await response.json();
-      console.log('Sentiment analysis result:', data);
       return { score: data.score, magnitude: data.magnitude };
     } catch (error) {
       console.error('Error analyzing sentiment:', error);
@@ -45,51 +42,101 @@ const Home: React.FC = () => {
     }
   };
 
-  const getNews = async (pageNum: number) => {
+
+  const fetchArticles = async (pageNum: number) => {
     setRefreshing(true);
-    const apiKey = process.env.NEXT_PUBLIC_NEWS_API_KEY;
-    if (!apiKey) {
-      console.error("API key is not set.");
-      setRefreshing(false);
-      return;
-    }
-
-    const url = `https://newsapi.org/v2/top-headlines?pageSize=10&page=${pageNum}&apiKey=${apiKey}&country=jp`;
-
     try {
-      const result = await axios.get(url);
-      const articlesWithSentiment = await Promise.all(result.data.articles.map(async (article: ArticleType) => {
-        const { description, title } = article;
-        const combinedText = `${title} ${description}`;
-        const { score, magnitude } = await analyzeSentiment(combinedText);
-        console.log('Article:', article.title, 'Sentiment Score:', score, 'Magnitude:', magnitude);
-        return { ...article, sentimentScore: score, sentimentMagnitude: magnitude };
-      }));
+      const result = await axios.get(`/api/fetchNews?page=${pageNum}`);
+      console.log('Fetched articles from API:', result.data.length); // APIから取得した記事の数をログ出力
 
-      setArticles((prevArticles) => pageNum === 1 ? articlesWithSentiment : [...prevArticles, ...articlesWithSentiment]);
+      if (result.data.length === 0) {
+        setHasMore(false); // APIから新しい記事が取得されなかった場合、hasMoreをfalseに設定
+        setRefreshing(false);
+        return;
+      }
+
+      const formattedArticles = await Promise.all(
+        result.data.map(async (article: any) => {
+          const combinedText = `${article.title} ${article.description || ''}`;
+          const sentiment = await analyzeSentiment(combinedText);
+
+          console.log(`Article: "${article.title}" - Sentiment Score: ${sentiment.score}, Magnitude: ${sentiment.magnitude}`);
+
+          return {
+            title: article.title,
+            source: article.source ? article.source : 'Unknown Source',
+            publishedAt: article.pubDate,
+            url: article.link,
+            id: article.id,
+            sentimentScore: sentiment.score,
+            sentimentMagnitude: sentiment.magnitude,
+            description: article.description || '', // descriptionをフィルタリングで使うため追加
+          };
+        })
+      );
+
+      const forbiddenWords = ['死', '悲', '惜', '殺', '没', '故', '戦', '脅', '滅', '不', '争', '亡', '墓', '処分', 'イスラエル', 'ウクライナ', 'ハマス', 'ロシア'];
+
+      // スコアが0以上で、特定の禁止ワードを含まない記事のみフィルタリング
+      const filteredArticles = formattedArticles.filter(article => {
+        const isValidScore = article.sentimentScore !== undefined && article.sentimentScore >= 0;
+        const doesNotContainForbiddenWords = !forbiddenWords.some(word => article.title.includes(word) || article.description.includes(word));
+
+        console.log(`Filtering article: "${article.title}" with score: ${article.sentimentScore}, isValid: ${isValidScore}, contains forbidden words: ${!doesNotContainForbiddenWords}`);
+
+        return isValidScore && doesNotContainForbiddenWords;
+      });
+
+      console.log('Filtered articles count:', filteredArticles.length); // フィルタリングされた記事の数をログ出力
+
+      // 重複記事をURLで排除（1回目）
+      const uniqueArticles = filteredArticles.filter((article, index, self) =>
+        index === self.findIndex((a) => a.url === article.url)
+      );
+
+      setArticles((prevArticles) => {
+        // 前の状態と新しい記事の両方から、スコアが0以上の記事だけを残す
+        const filteredPrevArticles = prevArticles.filter(article => article.sentimentScore !== undefined && article.sentimentScore >= 0);
+        const combinedArticles = [...filteredPrevArticles, ...uniqueArticles];
+
+        // 再度スコアが0以上かつ重複を排除（2回目のフィルタリング）
+        const finalFilteredArticles = combinedArticles.filter((article, index, self) => {
+          const isValidScore = article.sentimentScore !== undefined && article.sentimentScore >= 0;
+          const isUnique = index === self.findIndex((a) => a.url === article.url);
+          return isValidScore && isUnique;
+        });
+
+        console.log('Final filtered articles count:', finalFilteredArticles.length); // 最終的な記事の数をログ出力
+
+
+        return finalFilteredArticles;
+      });
 
       setRefreshing(false);
     } catch (e) {
       setRefreshing(false);
-      console.error("Error fetching news:", e);
+      console.error("Error fetching RSS feed:", e);
     }
   };
 
-  useEffect(() => {
-    getNews(1);
-  }, []);
 
   useEffect(() => {
-    if (page !== 1) {
-      getNews(page);
+    if (hasMore) {
+      fetchArticles(page);
     }
-  }, [page]);
+  }, [page, hasMore]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting) {
+        if (entries[0].isIntersecting && hasMore) {
           setPage((prevPage) => prevPage + 1);
+        } else if (entries[0].isIntersecting && !hasMore && !refreshing) {
+          // スクロールして最後に到達した時点でメッセージ表示
+          const endElement = endRef.current;
+          if (endElement) {
+            endElement.scrollIntoView({ behavior: 'smooth' });
+          }
         }
       },
       { threshold: 1.0 }
@@ -102,7 +149,8 @@ const Home: React.FC = () => {
         observer.unobserve(observerRef.current);
       }
     };
-  }, []);
+  }, [hasMore, refreshing]);
+
 
   return (
     <Stack w='100%' alignItems='center'>
@@ -110,12 +158,17 @@ const Home: React.FC = () => {
         <Flex flexDirection='column' alignItems='center' gap='5px'>
           {articles.length === 0 && !refreshing && <p>No articles found.</p>}
           {articles.map((article, index) => (
-            <React.Fragment key={article.url}>
+            <React.Fragment key={`${article.url}-${index}`}>
               <Article article={article} />
               {index < articles.length - 1 && <Divider borderColor='gray.700' />}
             </React.Fragment>
           ))}
           {refreshing && <Spinner />}
+          {!hasMore && !refreshing && (
+            <Text mt="20px" fontSize="lg" color="gray.500">
+              次の記事をお楽しみに！
+            </Text>
+          )}
           <div ref={observerRef}></div>
         </Flex>
       </Box>
