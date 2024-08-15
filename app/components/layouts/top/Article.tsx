@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Flex, Text, Button } from '@chakra-ui/react';
 import { HiStar } from "react-icons/hi";
-import { ArticleType } from '../../app/page';
-import { db } from '../../utils/firebase/firebaseConfg';
+import { ArticleType } from '../../../page';
+import { db } from '../../../../utils/firebase/firebaseConfg';
 import { doc, updateDoc, arrayUnion, getDoc } from 'firebase/firestore';
-import  useAuth  from '../hooks/useAuth'; // ユーザー認証を管理するカスタムフックを想定
+import  useAuth  from '../../../hooks/useAuth'; // ユーザー認証を管理するカスタムフックを想定
 
 interface ArticleProps {
   article: ArticleType;

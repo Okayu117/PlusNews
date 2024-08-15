@@ -3,11 +3,11 @@ import React, { useState, useEffect } from 'react';
 import { Flex, Stack, Box, Button, Input, Text, IconButton, useToast, Spinner } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 import { collection, getDoc, doc, updateDoc, arrayRemove } from 'firebase/firestore';
-import { db } from '../../../utils/firebase/firebaseConfg';
+import { db, storage } from '../../../utils/firebase/firebaseConfg';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import useAuth from '../../hooks/useAuth';
 
 interface ArticleType {
-  id: string;
   title: string;
   source: string;
   publishedAt: string;
@@ -20,6 +20,7 @@ const MyPage: React.FC = () => {
   const [displayName, setDisplayName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [favorites, setFavorites] = useState<ArticleType[]>([]);
+  const [profileImageUrl, setProfileImageUrl] = useState<string>('');
   const toast = useToast();
   const router = useRouter(); // useRouterフックを使用
 
@@ -101,6 +102,19 @@ const MyPage: React.FC = () => {
     }
   };
 
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (user && e.target.files && e.target.files[0]) {
+      const image = e.target.files[0];
+      const storageRef = ref(storage, `profileImages/${user.uid}`);
+      await uploadBytes(storageRef, image);
+      const url = await getDownloadURL(storageRef);
+      setProfileImageUrl(url);
+
+      const userRef = doc(db, 'users', user.uid);
+      await updateDoc(userRef, { profileImage: url });
+    }
+  };
+
   const handleBack = () => {
     router.push('/');
   };
@@ -122,6 +136,15 @@ const MyPage: React.FC = () => {
         {/* ユーザー情報 */}
         <Box mb="20px">
           <Text fontSize="2xl" mb="10px">マイページ</Text>
+
+
+          {/* プロフィール画像 */}
+          <Box mb="20px">
+            <Text fontSize="lg" fontWeight="bold">プロフィール画像:</Text>
+            {profileImageUrl && <img src={profileImageUrl} alt="Profile" style={{ width: '150px', borderRadius: '50%' }} />}
+            <Input type="file" onChange={handleImageChange} mt="10px" />
+          </Box>
+
           <Flex alignItems="center">
             <Text fontSize="lg" fontWeight="bold" mr="10px">ユーザー名:</Text>
             {editingName ? (

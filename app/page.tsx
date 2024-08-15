@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useEffect, useRef } from 'react';
 import { Flex, Stack, Box, Divider, Spinner, Text } from '@chakra-ui/react';
-import Article from './components/Article';
+import Article from './components/layouts/top/Article';
 import axios from 'axios';
 
 export interface ArticleType {
@@ -9,7 +9,6 @@ export interface ArticleType {
   source: string;
   publishedAt: string;
   url: string;
-  id: string;
   sentimentScore?: number;
   sentimentMagnitude?: number;
 }
@@ -67,7 +66,7 @@ const Home: React.FC = () => {
             source: article.source ? article.source : 'Unknown Source',
             publishedAt: article.pubDate,
             url: article.link,
-            id: article.id,
+            // id: article.id,
             sentimentScore: sentiment.score,
             sentimentMagnitude: sentiment.magnitude,
             description: article.description || '', // descriptionをフィルタリングで使うため追加
