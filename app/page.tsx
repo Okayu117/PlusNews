@@ -1,8 +1,10 @@
 'use client'
 import React, { useState, useEffect, useRef } from 'react';
-import { Flex, Stack, Box, Divider, Spinner, Text } from '@chakra-ui/react';
+import { Flex, Stack, Box, Divider, Spinner, Text, Img } from '@chakra-ui/react';
+import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import Article from './components/layouts/top/Article';
 import axios from 'axios';
+import useAuth  from './hooks/useAuth';
 
 export interface ArticleType {
   title: string;
@@ -14,12 +16,34 @@ export interface ArticleType {
 }
 
 const Home: React.FC = () => {
+  const { user } = useAuth(); // useAuthフックからユーザー情報を取得
   const [articles, setArticles] = useState<ArticleType[]>([]);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [page, setPage] = useState<number>(1);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const observerRef = useRef<HTMLDivElement | null>(null);
   const endRef = useRef<HTMLDivElement | null>(null);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [imagePosition, setImagePosition] = useState<string>('center');
+
+  useEffect(() => {
+    const fetchProfileImage = async () => {
+      if (user) { // ユーザーがログインしている場合
+        const db = getFirestore();
+        const userId = user.uid; // 実際のユーザーIDをここに設定してください
+        const userRef = doc(db, "users", userId);
+        const userDoc = await getDoc(userRef);
+
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          setProfileImage(userData?.profileImage || null);
+        }
+      }
+    };
+
+    fetchProfileImage();
+  }, [user]);
+
 
   const analyzeSentiment = async (text: string) => {
     try {
@@ -66,7 +90,6 @@ const Home: React.FC = () => {
             source: article.source ? article.source : 'Unknown Source',
             publishedAt: article.pubDate,
             url: article.link,
-            // id: article.id,
             sentimentScore: sentiment.score,
             sentimentMagnitude: sentiment.magnitude,
             description: article.description || '', // descriptionをフィルタリングで使うため追加
@@ -150,9 +173,35 @@ const Home: React.FC = () => {
     };
   }, [hasMore, refreshing]);
 
+  useEffect(() => {
+    const fetchProfileImage = async () => {
+      if (user) {
+        const db = getFirestore();
+        const userRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userRef);
+
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          setProfileImage(userData?.profileImage || null);
+          setImagePosition(userData?.imagePosition || 'center'); // 画像ポジションを設定
+        }
+      }
+    };
+
+    fetchProfileImage();
+  }, [user]);
+
+
 
   return (
-    <Stack w='100%' alignItems='center'>
+    <Stack w='100%' mt='30px' alignItems='center'>
+      <Box w='80%' h='25vh'>
+        <Img
+          w='100%' h='100%' bg='gray' objectFit='cover'
+          src={profileImage || "/img_logo.png"}
+          objectPosition={imagePosition}
+        />
+      </Box>
       <Box p='40px' w='90%'>
         <Flex flexDirection='column' alignItems='center' gap='5px'>
           {articles.length === 0 && !refreshing && <p>No articles found.</p>}

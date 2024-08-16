@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react';
-import { Flex, Stack, Box, Button, Input, Text, IconButton, useToast, Spinner } from '@chakra-ui/react';
+import { Flex, Stack, Box, Button, Input, Text, IconButton, useToast, Spinner, Select } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 import { collection, getDoc, doc, updateDoc, arrayRemove } from 'firebase/firestore';
 import { db, storage } from '../../../utils/firebase/firebaseConfg';
@@ -23,22 +23,26 @@ const MyPage: React.FC = () => {
   const [profileImageUrl, setProfileImageUrl] = useState<string>('');
   const toast = useToast();
   const router = useRouter(); // useRouterフックを使用
+  const [imagePosition, setImagePosition] = useState<string>('center');
 
   useEffect(() => {
     if (user) {
       setDisplayName(user.displayName || ''); // ユーザー名を初期化
       setEmail(user.email || ''); // メールアドレスを初期化
-
-      const fetchFavorites = async () => {
+      setProfileImageUrl(user.photoURL || ''); // プロフィール画像のURLを初期化
+      const fetchUserData = async () => {
         const userRef = doc(db, 'users', user.uid);
         const userDoc = await getDoc(userRef);
         if (userDoc.exists()) {
-          setFavorites(userDoc.data().favorites || []);
+          const userData = userDoc.data();
+          setFavorites(userData.favorites || []); // お気に入り記事の設定
+          setImagePosition(userData.imagePosition || 'center'); // ポジションを取得して状態に設定
         }
       };
-      fetchFavorites();
+      fetchUserData(); // ユーザーデータを取得する関数を呼び出し
     }
   }, [user]);
+
 
   const handleNameEdit = () => {
     setEditingName(true);
@@ -102,6 +106,28 @@ const MyPage: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    if (user) {
+      const storedImageUrl = localStorage.getItem('profileImageUrl');
+      if (storedImageUrl) {
+        setProfileImageUrl(storedImageUrl);
+      } else {
+        fetchProfileImage(user.uid);
+      }
+    }
+  }, [user]);
+
+  const fetchProfileImage = async (userId: string) => {
+    const userRef = doc(db, 'users', userId);
+    const userDoc = await getDoc(userRef);
+    if (userDoc.exists()) {
+      const profileImage = userDoc.data().profileImage || '';
+      setProfileImageUrl(profileImage);
+    }
+    console.log('Profile image fetched');
+  };
+
+
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (user && e.target.files && e.target.files[0]) {
       const image = e.target.files[0];
@@ -112,6 +138,8 @@ const MyPage: React.FC = () => {
 
       const userRef = doc(db, 'users', user.uid);
       await updateDoc(userRef, { profileImage: url });
+      localStorage.setItem('profileImageUrl', url);// URLを`localStorage`にも保存（リロード後に復元するため）
+
     }
   };
 
@@ -127,23 +155,54 @@ const MyPage: React.FC = () => {
     );
   }
 
+  const handlePositionChange = async (newPosition: string) => {
+    setImagePosition(newPosition);
+
+    if (user) {
+      const userRef = doc(db, 'users', user.uid);
+      await updateDoc(userRef, { imagePosition: newPosition }); // Firestoreにポジションを保存
+    }
+  };
+
+
   return (
     <Stack w='100%' alignItems='center' p="40px">
       <Box w='100%' maxW="600px">
         {/* 一覧に戻るボタン */}
         <Button mb="20px" colorScheme="teal" onClick={handleBack}>一覧に戻る</Button>
-
         {/* ユーザー情報 */}
         <Box mb="20px">
           <Text fontSize="2xl" mb="10px">マイページ</Text>
-
-
-          {/* プロフィール画像 */}
+        {/* プロフィール画像 */}
           <Box mb="20px">
             <Text fontSize="lg" fontWeight="bold">プロフィール画像:</Text>
             {profileImageUrl && <img src={profileImageUrl} alt="Profile" style={{ width: '150px', borderRadius: '50%' }} />}
             <Input type="file" onChange={handleImageChange} mt="10px" />
           </Box>
+          <Flex>
+              <Button
+                colorScheme={imagePosition === 'top' ? 'yellow' : 'gray'}
+                onClick={() => handlePositionChange('top')}
+              >
+                上部
+              </Button>
+              <Button
+                colorScheme={imagePosition === 'center' ? 'yellow' : 'gray'}
+                onClick={() => handlePositionChange('center')}
+                ml="2"
+              >
+                中央
+              </Button>
+              <Button
+                colorScheme={imagePosition === 'bottom' ? 'yellow' : 'gray'}
+                onClick={() => handlePositionChange('bottom')}
+                ml="2"
+              >
+                下部
+              </Button>
+            </Flex>
+
+
 
           <Flex alignItems="center">
             <Text fontSize="lg" fontWeight="bold" mr="10px">ユーザー名:</Text>

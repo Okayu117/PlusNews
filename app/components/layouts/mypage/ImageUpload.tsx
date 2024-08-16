@@ -2,7 +2,11 @@ import { useState } from 'react';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { getFirestore, doc, updateDoc } from 'firebase/firestore';
 
-const ImageUpload = ({ id }) => {
+interface ImageUploadProps {
+  userid: string;
+}
+
+const ImageUpload: React.FC<ImageUploadProps> = ({ userid }) => {
   const [image, setImage] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string>("");
 
@@ -16,7 +20,7 @@ const ImageUpload = ({ id }) => {
     if (!image) return;
 
     const storage = getStorage();//Firebase Storageのインスタンスを取得
-    const storageRef = ref(storage, `profileImages/${id}`);
+    const storageRef = ref(storage, `profileImages/${userid}`);
 
     await uploadBytes(storageRef, image);//選択された画像をFirebase Storageにアップロード
     const url = await getDownloadURL(storageRef);//アップロードした画像のURLを取得
@@ -24,7 +28,7 @@ const ImageUpload = ({ id }) => {
     setImageUrl(url);
 
     const db = getFirestore();
-    const userRef = doc(db, "users", id);
+    const userRef = doc(db, "users", userid);
 
     await updateDoc(userRef, {
       profileImage: url
