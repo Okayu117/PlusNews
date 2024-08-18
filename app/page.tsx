@@ -5,6 +5,7 @@ import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import Article from './components/layouts/top/Article';
 import axios from 'axios';
 import useAuth  from './hooks/useAuth';
+import Link from 'next/link';
 
 export interface ArticleType {
   title: string;
@@ -122,7 +123,7 @@ const Home: React.FC = () => {
         const combinedArticles = [...filteredPrevArticles, ...uniqueArticles];
 
         // 再度スコアが0以上かつ重複を排除（2回目のフィルタリング）
-        const finalFilteredArticles = combinedArticles.filter((article, index, self) => {
+        let finalFilteredArticles = combinedArticles.filter((article, index, self) => {
           const isValidScore = article.sentimentScore !== undefined && article.sentimentScore >= 0;
           const isUnique = index === self.findIndex((a) => a.url === article.url);
           return isValidScore && isUnique;
@@ -130,6 +131,10 @@ const Home: React.FC = () => {
 
         console.log('Final filtered articles count:', finalFilteredArticles.length); // 最終的な記事の数をログ出力
 
+        // ログインしていない場合、記事を3つに制限する
+        if (!user) {
+          finalFilteredArticles = finalFilteredArticles.slice(0, 3);
+        }
 
         return finalFilteredArticles;
       });
@@ -193,8 +198,9 @@ const Home: React.FC = () => {
 
 
 
+
   return (
-    <Stack w='100%' mt='30px' alignItems='center'>
+    <Stack w='100%' alignItems='center'>
       <Box w='80%' h='25vh'>
         <Img
           w='100%' h='100%' bg='gray' objectFit='cover'
@@ -213,9 +219,18 @@ const Home: React.FC = () => {
           ))}
           {refreshing && <Spinner />}
           {!hasMore && !refreshing && (
-            <Text mt="20px" fontSize="lg" color="gray.500">
-              次の記事をお楽しみに！
-            </Text>
+          <Text mt="20px" fontSize="lg" color="gray.500">
+          {user ? "次の記事をお楽しみに！" : (
+            <>
+              <Link href="/signin" passHref>
+                <Text display='inline'>
+                  サインイン
+                </Text>
+              </Link>
+              <Text display='inline'>して続きを見る</Text>
+            </>
+          )}
+        </Text>
           )}
           <div ref={observerRef}></div>
         </Flex>

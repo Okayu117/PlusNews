@@ -4,8 +4,13 @@ import Parser from 'rss-parser';
 const parser = new Parser();
 
 const rssFeeds = [
+  'https://news.yahoo.co.jp/rss/topics/sports.xml',
+  'https://news.yahoo.co.jp/rss/topics/science.xml',
   'https://www3.nhk.or.jp/rss/news/cat0.xml',
+  'https://news.yahoo.co.jp/rss/topics/entertainment.xml',
+  'https://news.yahoo.co.jp/rss/topics/business.xml',
   'https://www.asahi.com/rss/asahi/newsheadlines.rdf',
+  'https://news.yahoo.co.jp/rss/topics/domestic.xml',
 ];
 
 const ARTICLES_PER_PAGE = 5; // 1ページあたりの記事数を設定
@@ -13,17 +18,22 @@ const ARTICLES_PER_PAGE = 5; // 1ページあたりの記事数を設定
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     const { page = 1 } = req.query; // ページ番号をクエリから取得、デフォルトは1
-    const allArticles = [];
+    const allArticles: Array<{ title: string; link: string; content: string; pubDate: string; source: string; }> = [];
 
+    // RSSフィードを全て取得して、記事を結合
     for (const feedUrl of rssFeeds) {
       const feed = await parser.parseURL(feedUrl);
-      const articles = feed.items?.map(item => ({
-        title: item.title || '',
-        link: item.link || '',
-        content: item.contentSnippet || '',
-        pubDate: item.pubDate || '',
-        source: feed.title || '',
-      }));
+      const articles = feed.items?.map(item => {
+        // pubDateが存在しない場合の処理
+        const pubDate = item.pubDate || item.isoDate || '';
+        return {
+          title: item.title || '',
+          link: item.link || '',
+          content: item.contentSnippet || '',
+          pubDate: pubDate,
+          source: feed.title || '',
+        };
+      });
       if (articles) {
         allArticles.push(...articles);
       }

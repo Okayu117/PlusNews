@@ -14,7 +14,7 @@ const useAuth = () => {
       if (user) {
         setUser(user);
       } else {
-        router.push('/pages/signin'); // 未認証の場合、サインインページにリダイレクト
+        router.push('/'); // 未認証の場合、サインインページにリダイレクト
       }
       setLoading(false);
     });

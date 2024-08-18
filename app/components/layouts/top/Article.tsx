@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Flex, Text, Button } from '@chakra-ui/react';
+import { Box, Flex, Text, Button, useToast } from '@chakra-ui/react';
 import { HiStar } from "react-icons/hi";
 import { ArticleType } from '../../../page';
 import { db } from '../../../../utils/firebase/firebaseConfg';
@@ -15,6 +15,7 @@ const Article: React.FC<ArticleProps> = ({ article }) => {
   const time = new Date(publishedAt).toLocaleString();
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
   const { user } = useAuth(); // 現在ログインしているユーザーを取得
+  const toast = useToast();
 
   useEffect(() => {
     const checkIfFavorite = async () => {
@@ -35,28 +36,56 @@ const Article: React.FC<ArticleProps> = ({ article }) => {
 
   const handleAddToFavorites = async () => {
     if (!user) {
-      alert('ログインしてください。');
+      toast({
+        title: 'エラー',
+        description: 'ログインしてください。',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
       return;
     }
 
     try {
       const userRef = doc(db, 'users', user.uid);
-      await updateDoc(userRef, {
-        favorites: arrayUnion({ title, source, url, publishedAt })
-      });
-      setIsFavorite(true);
+      const userDoc = await getDoc(userRef);
+
+      if (userDoc.exists()) {
+        const data = userDoc.data();
+        const favorites = data.favorites || [];
+
+        if (favorites.length >= 5) {
+          toast({
+            title: 'エラー',
+            description: 'お気に入りは5つまでしか保存できません。',
+            status: 'error',
+            duration: 5000,
+            isClosable: true,
+          });
+          return;
+        }
+
+        await updateDoc(userRef, {
+          favorites: arrayUnion({ title, source, url, publishedAt })
+        });
+        setIsFavorite(true);
+      }
     } catch (error) {
       console.error('Error adding to favorites: ', error);
+      toast({
+        title: 'エラー',
+        description: 'お気に入りの追加中にエラーが発生しました。',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
     }
   };
 
   return (
-    <Box w="100%">
-      <Flex
-        p='15px'
-        gap='15px'
-        flexDirection="column"
-      >
+    <>
+    <Flex w="100%" alignItems='center' justifyContent='space-between'>
+      <Flex p='15px' gap='15px' flexDirection="column">
         <Box>
           <a href={url} target="_blank" rel="noopener noreferrer">
             <Text fontWeight="bold">{title}</Text>
@@ -64,20 +93,19 @@ const Article: React.FC<ArticleProps> = ({ article }) => {
           <Text>{source?.toUpperCase() || 'Unknown Source'}</Text>
           <Text>{time}</Text>
         </Box>
-
-        {/* お気に入りボタン */}
-        <Flex mt="10px" alignItems="center">
-          <Button
-            onClick={handleAddToFavorites}
-            leftIcon={<HiStar />}
-            colorScheme={isFavorite ? "yellow" : "gray"}
-            isDisabled={isFavorite}
-          >
-            {isFavorite ? "保存済み" : "お気に入りに保存"}
-          </Button>
-        </Flex>
       </Flex>
-    </Box>
+      {/* お気に入りボタン */}
+      <Button
+        onClick={handleAddToFavorites}
+        leftIcon={<HiStar />}
+        colorScheme={isFavorite ? "yellow" : "gray"}
+        isDisabled={isFavorite}
+        mr='15px'
+      >
+        {isFavorite ? "保存済み" : "お気に入りに保存"}
+      </Button>
+    </Flex>
+  </>
   );
 };
 
