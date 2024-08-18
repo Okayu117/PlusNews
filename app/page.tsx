@@ -131,9 +131,11 @@ const Home: React.FC = () => {
 
         console.log('Final filtered articles count:', finalFilteredArticles.length); // 最終的な記事の数をログ出力
 
-        // ログインしていない場合、記事を3つに制限する
         if (!user) {
-          finalFilteredArticles = finalFilteredArticles.slice(0, 3);
+          finalFilteredArticles = finalFilteredArticles.slice(0, 2);// ログインしていない場合記事を3つに制限する
+          // setHasMore(false); // ログインしていない場合は追加ロードを無効にする
+        // } else {
+          // setHasMore(true); // ログインしている場合は追加ロードを有効にする
         }
 
         return finalFilteredArticles;
