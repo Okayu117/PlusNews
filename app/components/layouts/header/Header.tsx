@@ -7,12 +7,18 @@ import MyPageButton from './MyPageButton'
 import { onAuthStateChanged } from 'firebase/auth'
 import { auth } from '@/utils/firebase/firebaseConfg'
 import SignOutButton from './SignOutButton'
+import { doc, getDoc, getFirestore } from 'firebase/firestore'
+import useAuth from '@/app/hooks/useAuth'
+import { usePathname } from 'next/navigation'
 
 const Header = () => {
 
+  const { user, loading } = useAuth();
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [username, setUsername] = useState('')
-
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [imagePosition, setImagePosition] = useState<string>('center');
+  const pathname = usePathname();
 
 
   useEffect(() => {
@@ -29,15 +35,34 @@ const Header = () => {
       return () => unsubscribe()
       }, [])
 
+      useEffect(() => {
+        const fetchProfileImage = async () => {
+          if (user) {
+            const db = getFirestore();
+            const userRef = doc(db, "users", user.uid);
+            const userDoc = await getDoc(userRef);
+
+            if (userDoc.exists()) {
+              const userData = userDoc.data();
+              setProfileImage(userData?.profileImage || null);
+              setImagePosition(userData?.imagePosition || 'center'); // 画像ポジションを設定
+            }
+          }
+        };
+
+        fetchProfileImage();
+      }, [user]);
+
+        // サインイン・サインアップページではヘッダーの一部を非表示にする
+    const isAuthPage = pathname === '/pages/signin' || pathname === '/pages/signup';
+
+
 
   return (
     <>
-      <Stack w='100%'>
-        <Box bg='white' pr='30px' pl='30px' pt='10px' pb='10px'>
+      <Stack w='100%' position='fixed' bg='white' zIndex='100'>
+        <Box pr='30px' pl='30px' pt='5px'>
           <Box>
-            {/* <Link  href='/' maxWidth='200px'>
-              <Img src="/img_logo.png" alt="logo" />
-            </Link> */}
             <Flex alignItems='center' gap='20px' justifyContent='flex-end'>
             {isLoggedIn ? (
               <>
@@ -61,6 +86,18 @@ const Header = () => {
             </Flex>
           </Box>
         </Box>
+        {!isAuthPage && (
+        <Box w='100%' position='relative' height='160px'>
+          <Box w='150px' h='150px' ml='auto' mr='auto'>
+            <Img
+              w='100%' h='100%' bg='gray' objectFit='cover' borderRadius='50%'
+              src={profileImage || "/img_logo.png"}
+              objectPosition={imagePosition}
+            />
+          </Box>
+          <Img src='/title_img.png' alt='title' w='700px' h='auto' position='absolute' bottom='10%' right='5%' left='0' m='auto' />
+        </Box>
+        )}
       </Stack>
     </>
   )

@@ -94,8 +94,8 @@ const SignUp = () => {
   return (
     <>
       <form onSubmit={handleSubmit(handleSignUp)}>
-        <Stack maxWidth='70%' m='auto' textAlign='center' justifyContent='center'>
-          <Flex pt='50px' flexDirection='column' alignItems='center'>
+        <Stack maxWidth='70%' m='auto' textAlign='center' justifyContent='center' pt='100px'>
+          <Flex flexDirection='column' alignItems='center'>
             <Text fontSize='30px'>Sign Up</Text>
               <FormControl maxWidth='400px'>
                 <Stack justifyContent='center' flexDirection='column' alignItems='start' pt='20px' pb='20px'>

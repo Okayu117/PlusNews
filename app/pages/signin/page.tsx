@@ -89,7 +89,7 @@ const SignIn = () => {
     <>
       <form onSubmit={handleSubmit(handleSignIn)}>
         <Stack maxWidth='70%' m='auto' textAlign='center' justifyContent='center'>
-          <Flex pt='50px' flexDirection='column' alignItems='center'>
+          <Flex pt='100px' flexDirection='column' alignItems='center'>
             <Text as='samp' fontSize='30px'>Sign In</Text>
             <FormControl maxWidth='400px'>
               <Stack justifyContent='center' flexDirection='column' alignItems='start' pt='20px' pb='20px'>

@@ -6,6 +6,7 @@ import Article from './components/layouts/top/Article';
 import axios from 'axios';
 import useAuth  from './hooks/useAuth';
 import Link from 'next/link';
+import Header from './components/layouts/header/Header';
 
 export interface ArticleType {
   title: string;
@@ -24,8 +25,6 @@ const Home: React.FC = () => {
   const [hasMore, setHasMore] = useState<boolean>(true);
   const observerRef = useRef<HTMLDivElement | null>(null);
   const endRef = useRef<HTMLDivElement | null>(null);
-  const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [imagePosition, setImagePosition] = useState<string>('center');
 
   useEffect(() => {
     const fetchProfileImage = async () => {
@@ -37,7 +36,6 @@ const Home: React.FC = () => {
 
         if (userDoc.exists()) {
           const userData = userDoc.data();
-          setProfileImage(userData?.profileImage || null);
         }
       }
     };
@@ -133,9 +131,6 @@ const Home: React.FC = () => {
 
         if (!user) {
           finalFilteredArticles = finalFilteredArticles.slice(0, 2);// ログインしていない場合記事を3つに制限する
-          // setHasMore(false); // ログインしていない場合は追加ロードを無効にする
-        // } else {
-          // setHasMore(true); // ログインしている場合は追加ロードを有効にする
         }
 
         return finalFilteredArticles;
@@ -180,64 +175,40 @@ const Home: React.FC = () => {
     };
   }, [hasMore, refreshing]);
 
-  useEffect(() => {
-    const fetchProfileImage = async () => {
-      if (user) {
-        const db = getFirestore();
-        const userRef = doc(db, "users", user.uid);
-        const userDoc = await getDoc(userRef);
-
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          setProfileImage(userData?.profileImage || null);
-          setImagePosition(userData?.imagePosition || 'center'); // 画像ポジションを設定
-        }
-      }
-    };
-
-    fetchProfileImage();
-  }, [user]);
-
-
-
 
   return (
-    <Stack w='100%' alignItems='center'>
-      <Box w='80%' h='25vh'>
-        <Img
-          w='100%' h='100%' bg='gray' objectFit='cover'
-          src={profileImage || "/img_logo.png"}
-          objectPosition={imagePosition}
-        />
-      </Box>
-      <Box p='40px' w='90%'>
-        <Flex flexDirection='column' alignItems='center' gap='5px'>
-          {articles.length === 0 && !refreshing && <p>No articles found.</p>}
-          {articles.map((article, index) => (
-            <React.Fragment key={`${article.url}-${index}`}>
-              <Article article={article} />
-              {index < articles.length - 1 && <Divider borderColor='gray.700' />}
-            </React.Fragment>
-          ))}
-          {refreshing && <Spinner />}
-          {!hasMore && !refreshing && (
-          <Text mt="20px" fontSize="lg" color="gray.500">
-          {user ? "次の記事をお楽しみに！" : (
-            <>
-              <Link href="/signin" passHref>
-                <Text display='inline'>
-                  サインイン
-                </Text>
-              </Link>
-              <Text display='inline'>して続きを見る</Text>
-            </>
-          )}
-        </Text>
-          )}
-          <div ref={observerRef}></div>
-        </Flex>
-      </Box>
-    </Stack>
+    <>
+      <Stack w='100%' alignItems='center' pt='240px'>
+        <Box p='40px' pt='20px' w='90%'>
+          <Flex flexDirection='column' alignItems='center' gap='5px'>
+            {articles.length === 0 && !refreshing && <p>No articles found.</p>}
+            {articles.map((article, index) => (
+              <React.Fragment key={`${article.url}-${index}`}>
+                <Article article={article} />
+                {index < articles.length - 1 && <Divider borderColor='gray.700' />}
+              </React.Fragment>
+            ))}
+            {refreshing && <Spinner />}
+            {!hasMore && !refreshing && (
+            <Text mt="20px" fontSize="lg" color="gray.500">
+            {user ? "次の記事をお楽しみに！" : (
+              <>
+                <Link href="/pages/signin" passHref>
+                  <Text display='inline'>
+                    サインイン
+                  </Text>
+                </Link>
+                <Text display='inline'>して続きを見る</Text>
+              </>
+            )}
+          </Text>
+            )}
+            <div ref={observerRef}></div>
+          </Flex>
+        </Box>
+      </Stack>
+    </>
+
   );
 };
 

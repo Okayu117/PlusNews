@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react';
-import { Flex, Stack, Box, Button, Input, Text, IconButton, useToast, Spinner, Select } from '@chakra-ui/react';
+import { Flex, Stack, Box, Button, Input, Text, IconButton, useToast, Spinner, Select, Img } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 import { collection, getDoc, doc, updateDoc, arrayRemove } from 'firebase/firestore';
 import { db, storage } from '../../../utils/firebase/firebaseConfg';
@@ -37,6 +37,13 @@ const MyPage: React.FC = () => {
           const userData = userDoc.data();
           setFavorites(userData.favorites || []); // お気に入り記事の設定
           setImagePosition(userData.imagePosition || 'center'); // ポジションを取得して状態に設定
+
+          // FirestoreのprofileImageフィールドが存在する場合にのみプロフィール画像を設定
+          if (userData.profileImage) {
+            setProfileImageUrl(userData.profileImage);
+          } else {
+            setProfileImageUrl(''); // プロフィール画像がない場合は空に設定
+          }
         }
       };
       fetchUserData(); // ユーザーデータを取得する関数を呼び出し
@@ -174,11 +181,15 @@ const MyPage: React.FC = () => {
         <Box mb="20px">
           <Text fontSize="2xl" mb="10px">マイページ</Text>
         {/* プロフィール画像 */}
-          <Box mb="20px">
-            <Text fontSize="lg" fontWeight="bold">プロフィール画像:</Text>
-            {profileImageUrl && <img src={profileImageUrl} alt="Profile" style={{ width: '150px', borderRadius: '50%' }} />}
-            <Input type="file" onChange={handleImageChange} mt="10px" />
-          </Box>
+        <Box mb="20px">
+          <Text fontSize="lg" fontWeight="bold">プロフィール画像:</Text>
+          {profileImageUrl ? (
+            <Img src={profileImageUrl} alt="Profile" w='150px' h='150px' borderRadius='50%' objectFit='cover' />
+          ) : (
+            <Text>画像が設定されていません</Text>
+          )}
+          <Input type="file" onChange={handleImageChange} mt="10px" />
+        </Box>
           <Flex>
               <Button
                 colorScheme={imagePosition === 'top' ? 'yellow' : 'gray'}
@@ -229,19 +240,16 @@ const MyPage: React.FC = () => {
             </Flex>
           )}
         </Box>
-
         {/* メールアドレス */}
         <Box mb="20px">
           <Text fontSize="lg" fontWeight="bold">メールアドレス:</Text>
           <Text>{email}</Text>
         </Box>
-
         {/* パスワード */}
         <Box mb="20px">
           <Text fontSize="lg" fontWeight="bold">パスワード:</Text>
           <Text>********</Text>
         </Box>
-
         {/* お気に入り記事リスト */}
         <Box>
           <Text fontSize="lg" fontWeight="bold" mb="10px">保存した記事:</Text>
