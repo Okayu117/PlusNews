@@ -6,12 +6,12 @@ import { Darumadrop_One } from 'next/font/google';
 const darumadrop = Darumadrop_One({ subsets: ["latin"], weight: '400' });
 
 
-const SignInButton = () => {
+const MyPageButton = () => {
   return (
     <>
         <Button colorScheme='gray' variant='ghost' size='lg' sx={{ fontFamily: darumadrop.style.fontFamily }}>
-          <Link href='/pages/signin'>
-          Sign In
+          <Link href='/pages/mypage' >
+          My Page
           </Link>
         </Button>
 
@@ -19,4 +19,4 @@ const SignInButton = () => {
   )
 }
 
-export default SignInButton
+export default MyPageButton
