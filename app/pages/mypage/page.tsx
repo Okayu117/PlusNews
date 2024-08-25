@@ -1,11 +1,17 @@
 'use client'
 import React, { useState, useEffect } from 'react';
-import { Flex, Stack, Box, Button, Input, Text, IconButton, useToast, Spinner, Select, Img } from '@chakra-ui/react';
+import { Flex, Stack, Box, Button, Input, Text, useToast, Spinner, Img, Link, useBreakpointValue } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
-import { collection, getDoc, doc, updateDoc, arrayRemove } from 'firebase/firestore';
+import { getDoc, doc, updateDoc } from 'firebase/firestore';
 import { db, storage } from '../../../utils/firebase/firebaseConfg';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import useAuth from '../../hooks/useAuth';
+import "../../globals.css";
+import { Darumadrop_One } from 'next/font/google';
+
+
+const darumadrop = Darumadrop_One({ subsets: ["latin"], weight: '400' });
+
 
 interface ArticleType {
   title: string;
@@ -24,6 +30,9 @@ const MyPage: React.FC = () => {
   const toast = useToast();
   const router = useRouter(); // useRouterフックを使用
   const [imagePosition, setImagePosition] = useState<string>('center');
+
+  const isMobile = useBreakpointValue({ base: true, md: false });
+
 
   useEffect(() => {
     if (user) {
@@ -173,50 +182,53 @@ const MyPage: React.FC = () => {
 
 
   return (
-    <Stack w='100%' alignItems='center' p="40px">
-      <Box w='100%' maxW="600px">
-        {/* 一覧に戻るボタン */}
-        <Button mb="20px" colorScheme="teal" onClick={handleBack}>一覧に戻る</Button>
-        {/* ユーザー情報 */}
-        <Box mb="20px">
-          <Text fontSize="2xl" mb="10px">マイページ</Text>
-        {/* プロフィール画像 */}
-        <Box mb="20px">
-          <Text fontSize="lg" fontWeight="bold">プロフィール画像:</Text>
-          {profileImageUrl ? (
-            <Img src={profileImageUrl} alt="Profile" w='150px' h='150px' borderRadius='50%' objectFit='cover' />
-          ) : (
-            <Text>画像が設定されていません</Text>
-          )}
-          <Input type="file" onChange={handleImageChange} mt="10px" />
-        </Box>
-          <Flex>
-              <Button
-                colorScheme={imagePosition === 'top' ? 'yellow' : 'gray'}
-                onClick={() => handlePositionChange('top')}
-              >
-                上部
-              </Button>
-              <Button
-                colorScheme={imagePosition === 'center' ? 'yellow' : 'gray'}
-                onClick={() => handlePositionChange('center')}
-                ml="2"
-              >
-                中央
-              </Button>
-              <Button
-                colorScheme={imagePosition === 'bottom' ? 'yellow' : 'gray'}
-                onClick={() => handlePositionChange('bottom')}
-                ml="2"
-              >
-                下部
-              </Button>
-            </Flex>
-
-
-
-          <Flex alignItems="center">
-            <Text fontSize="lg" fontWeight="bold" mr="10px">ユーザー名:</Text>
+    <Stack maxWidth='1100px' m='auto' textAlign='center' justifyContent='center' pt='50px' pl='20px' pr='30px' pb='30px' w='100%'>
+      <Text fontSize='30px' m='auto' pt='50px' sx={{ fontFamily: darumadrop.style.fontFamily }}>My Page</Text>
+      <Flex pt='40px' justifyContent='space-between' gap='30px' flexDirection={isMobile ? 'column' : 'row'}>
+        <Box border='solid 2px silver' borderRadius='30px' p='30px' textAlign='left' w={isMobile ? '100%' : '40%'}>
+          {/* ユーザー情報 */}
+          <Box>
+          {/* プロフィール画像 */}
+          <Box>
+            <Text fontSize="lg" fontWeight="bold" mr='auto'>TOPの画像：</Text>
+            {profileImageUrl ? (
+              <Img src={profileImageUrl} alt="Profile" w='150px' h='150px' borderRadius='50%' objectFit='cover' mt='10px' ml='auto' mr='auto'
+              objectPosition={imagePosition === 'top' ? 'top' : imagePosition === 'bottom' ? 'bottom' : 'center'}
+              />
+            ) : (
+              <Text mt='10px'>画像が設定されていません</Text>
+            )}
+            <Button as="label" htmlFor="file-upload" colorScheme="teal" size='sm' mt='10px'>ファイルを選択</Button>
+            <Input type="file" id="file-upload" border="none" display="none" onChange={handleImageChange} mt="10px" />
+          </Box>
+          {/* 画像の配置 */}
+          <Text mt='20px' fontSize="lg" fontWeight="bold">画像のポジション：</Text>
+          <Flex mt='10px' justifyContent='center'>
+            <Button
+              colorScheme={imagePosition === 'top' ? 'yellow' : 'gray'}
+              onClick={() => handlePositionChange('top')}
+            >
+              上部
+            </Button>
+            <Button
+              colorScheme={imagePosition === 'center' ? 'yellow' : 'gray'}
+              onClick={() => handlePositionChange('center')}
+              ml="2"
+            >
+              中央
+            </Button>
+            <Button
+              colorScheme={imagePosition === 'bottom' ? 'yellow' : 'gray'}
+              onClick={() => handlePositionChange('bottom')}
+              ml="2"
+            >
+              下部
+            </Button>
+          </Flex>
+          {/* ユーザー名 */}
+          <Box alignItems="center">
+            <Text mt='20px' fontSize="lg" fontWeight="bold" mr="10px">ユーザー名：</Text>
+            <Flex alignItems='center' mt='10px'>
             {editingName ? (
               <Input
                 value={displayName}
@@ -226,41 +238,46 @@ const MyPage: React.FC = () => {
             ) : (
               <Text>{displayName}</Text>
             )}
-            <Button
-              aria-label="Edit name"
-              ml="10px"
-              onClick={handleNameEdit}
-              display={editingName ? 'none' : 'inline-flex'}
-            />
-          </Flex>
-          {editingName && (
-            <Flex mt="10px">
-              <Button colorScheme="teal" mr="5px" onClick={handleNameSave}>保存</Button>
-              <Button onClick={handleNameCancel}>キャンセル</Button>
+              <Button
+                size="sm"
+                colorScheme="teal"
+                aria-label="Edit name"
+                ml="10px"
+                onClick={handleNameEdit}
+                display={editingName ? 'none' : 'inline-flex'}
+              >変更
+              </Button>
             </Flex>
+          </Box>
+          {/* ユーザー名の保存・キャンセルボタン */}
+          {editingName && (
+          <Flex mt="10px">
+            <Button colorScheme="teal" mr="5px" onClick={handleNameSave} size="sm">OK</Button>
+            <Button onClick={handleNameCancel} size="sm">キャンセル</Button>
+          </Flex>
           )}
-        </Box>
-        {/* メールアドレス */}
-        <Box mb="20px">
-          <Text fontSize="lg" fontWeight="bold">メールアドレス:</Text>
-          <Text>{email}</Text>
-        </Box>
-        {/* パスワード */}
-        <Box mb="20px">
-          <Text fontSize="lg" fontWeight="bold">パスワード:</Text>
-          <Text>********</Text>
+          </Box>
+          {/* メールアドレス */}
+          <Box mt='20px'>
+            <Text fontSize="lg" fontWeight="bold">メールアドレス：</Text>
+            <Text>{email}</Text>
+          </Box>
+          {/* パスワード */}
+          <Box mt='20px'>
+            <Text fontSize="lg" fontWeight="bold">パスワード：</Text>
+            <Text>********</Text>
+          </Box>
         </Box>
         {/* お気に入り記事リスト */}
-        <Box>
-          <Text fontSize="lg" fontWeight="bold" mb="10px">保存した記事:</Text>
+        <Box border='solid 2px silver' borderRadius='30px' p='30px' textAlign='left' w={isMobile ? '100%' : '60%'}>
+          <Text fontSize="lg" fontWeight="bold" mb="10px">保存した記事：</Text>
           {favorites.length > 0 ? (
             favorites.map((article) => (
               <Flex key={article.url} alignItems="center" mb="10px">
                 <Box flex="1">
-                  <a href={article.url} target="_blank" rel="noopener noreferrer">
+                  <Link href={article.url} target="_blank" rel="noopener noreferrer">
                     <Text fontWeight="bold">{article.title}</Text>
-                  </a>
-                  <Text>{article.source}</Text>
+                  </Link>
                 </Box>
                 <Button colorScheme="red" onClick={() => handleRemoveFavorite(article.url)}>お気に入り解除</Button>
               </Flex>
@@ -269,7 +286,10 @@ const MyPage: React.FC = () => {
             <Text>保存した記事がありません。</Text>
           )}
         </Box>
-      </Box>
+      </Flex>
+      <Button mt='30px' ml='auto' mr='auto' variant='ghost' size='lg' w='100px' onClick={handleBack} sx={{ fontFamily: darumadrop.style.fontFamily }}>
+        Back
+      </Button>
     </Stack>
   );
 };

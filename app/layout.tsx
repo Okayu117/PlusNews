@@ -3,8 +3,12 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "./components/layouts/header/Header";
 import { ChakraProvider } from "@chakra-ui/react";
+import { Noto_Sans_JP } from 'next/font/google';
+
 
 const inter = Inter({ subsets: ["latin"] });
+const darumadrop = Noto_Sans_JP({ subsets: ["latin"],
+  weight: '400' });
 
 export const metadata: Metadata = {
   title: "PlusNews",
@@ -18,7 +22,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <head>
+      </head>
+      <body className={`${inter.className} ${darumadrop.className}`}>
         <ChakraProvider>
           <Header />
           {children}

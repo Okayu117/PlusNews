@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Flex, Text, Button, useToast } from '@chakra-ui/react';
-import { HiStar } from "react-icons/hi";
+import { Box, Flex, Text, Button, useToast, Link, useBreakpointValue } from '@chakra-ui/react';
 import { ArticleType } from '../../../page';
 import { db } from '../../../../utils/firebase/firebaseConfg';
 import { doc, updateDoc, arrayUnion, getDoc } from 'firebase/firestore';
 import  useAuth  from '../../../hooks/useAuth'; // ユーザー認証を管理するカスタムフックを想定
+import { Icon } from '@chakra-ui/react'
+import { MdStar } from 'react-icons/md'
+
 
 interface ArticleProps {
   article: ArticleType;
@@ -16,6 +18,9 @@ const Article: React.FC<ArticleProps> = ({ article }) => {
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
   const { user } = useAuth(); // 現在ログインしているユーザーを取得
   const toast = useToast();
+
+  const isMobile = useBreakpointValue({ base: true, md: false });
+
 
   useEffect(() => {
     const checkIfFavorite = async () => {
@@ -85,24 +90,27 @@ const Article: React.FC<ArticleProps> = ({ article }) => {
   return (
     <>
     <Flex w="100%" alignItems='center' justifyContent='space-between'>
-      <Flex p='15px' gap='15px' flexDirection="column">
+      <Flex p='15px' pl={isMobile ? '0' : '15px'} gap='15px' flexDirection="column">
         <Box>
-          <a href={url} target="_blank" rel="noopener noreferrer">
-            <Text fontWeight="bold">{title}</Text>
-          </a>
-          <Text>{source?.toUpperCase() || 'Unknown Source'}</Text>
-          <Text>{time}</Text>
+          <Flex flexWrap='wrap' alignItems='center'>
+            <Link href={url} target="_blank" rel="noopener noreferrer">
+              <Text fontWeight="bold" mr='10px' fontSize={isMobile ? 'sm' : 'md'}>{title}</Text>
+            </Link>
+            <Text mt={isMobile ? '5px' : '0'} fontSize={isMobile ? 'xs' : 'sm'}>＜{source?.toUpperCase() || 'Unknown Source'}＞</Text>
+          </Flex>
+          <Text mt='5px' fontSize={isMobile ? 'xs' : 'sm'}>{time}</Text>
         </Box>
       </Flex>
       {/* お気に入りボタン */}
-      <Button
+      <Button w='30px' h='30px' minWidth='0' textAlign='center'
         onClick={handleAddToFavorites}
-        leftIcon={<HiStar />}
         colorScheme={isFavorite ? "yellow" : "gray"}
         isDisabled={isFavorite}
-        mr='15px'
+        mr={isMobile ? '0' : '15px'}
+        justifyContent="center"
+        alignItems="center"
       >
-        {isFavorite ? "保存済み" : "お気に入りに保存"}
+        <Icon as={MdStar} boxSize={4} />
       </Button>
     </Flex>
   </>

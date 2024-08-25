@@ -1,13 +1,17 @@
 'use client'
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth, db } from '@/utils/firebase/firebaseConfg';
-import { Box, Button, FormControl, Input, Link, Stack, Text, Flex, useToast } from '@chakra-ui/react'
+import { Box, Button, FormControl, Input, Link, Stack, Text, Flex, useToast, Spinner } from '@chakra-ui/react'
 import { useForm } from "react-hook-form"
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { FirebaseError } from 'firebase/app';
 import { doc, getDoc } from 'firebase/firestore';
+import { Darumadrop_One } from 'next/font/google';
+
+const darumadrop = Darumadrop_One({ subsets: ["latin"], weight: '400' });
+
 
 export const validationSchema = z.object({
   email: z
@@ -85,12 +89,17 @@ const SignIn = () => {
     }
   };
 
+  const handleBack = () => {
+    router.push('/');
+  };
+
+
   return (
     <>
       <form onSubmit={handleSubmit(handleSignIn)}>
-        <Stack maxWidth='70%' m='auto' textAlign='center' justifyContent='center'>
-          <Flex pt='100px' flexDirection='column' alignItems='center'>
-            <Text as='samp' fontSize='30px'>Sign In</Text>
+        <Stack maxWidth='70%' m='auto' textAlign='center' justifyContent='center' pt='50px'>
+          <Flex flexDirection='column' alignItems='center' pt='100px'>
+            <Text fontSize='4xl' sx={{ fontFamily: darumadrop.style.fontFamily }}>Sign In</Text>
             <FormControl maxWidth='400px'>
               <Stack justifyContent='center' flexDirection='column' alignItems='start' pt='20px' pb='20px'>
                 <Input
@@ -128,6 +137,9 @@ const SignIn = () => {
                 <Text pt='15px' fontSize='12px'>アカウントを作成する</Text>
               </Link>
             </Box>
+            <Button mt='30px' variant='ghost' size='lg' onClick={handleBack} sx={{ fontFamily: darumadrop.style.fontFamily }}>
+              Back
+            </Button>
           </Flex>
         </Stack>
       </form>

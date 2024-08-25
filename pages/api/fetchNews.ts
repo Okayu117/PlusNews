@@ -17,7 +17,8 @@ const ARTICLES_PER_PAGE = 5; // 1ページあたりの記事数を設定
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { page = 1 } = req.query; // ページ番号をクエリから取得、デフォルトは1
+    const { page = 1, limit } = req.query; // ページ番号をクエリから取得、デフォルトは1
+    const ARTICLES_PER_PAGE = limit ? Number(limit) : 5; // クエリのlimitパラメータがある場合はその値を使用
     const allArticles: Array<{ title: string; link: string; content: string; pubDate: string; source: string; }> = [];
 
     // RSSフィードを全て取得して、記事を結合

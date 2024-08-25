@@ -1,12 +1,11 @@
 'use client'
 import React, { useState, useEffect, useRef } from 'react';
-import { Flex, Stack, Box, Divider, Spinner, Text, Img } from '@chakra-ui/react';
+import { Flex, Box, Divider, Spinner, Text, useBreakpointValue, useMediaQuery } from '@chakra-ui/react';
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import Article from './components/layouts/top/Article';
 import axios from 'axios';
 import useAuth  from './hooks/useAuth';
 import Link from 'next/link';
-import Header from './components/layouts/header/Header';
 
 export interface ArticleType {
   title: string;
@@ -25,6 +24,10 @@ const Home: React.FC = () => {
   const [hasMore, setHasMore] = useState<boolean>(true);
   const observerRef = useRef<HTMLDivElement | null>(null);
   const endRef = useRef<HTMLDivElement | null>(null);
+
+  const isMobile = useBreakpointValue({ base: true, md: false });
+  const [isCustomBreakpoint] = useMediaQuery('(min-width: 600px) and (max-width: 767px)');
+
 
   useEffect(() => {
     const fetchProfileImage = async () => {
@@ -66,6 +69,7 @@ const Home: React.FC = () => {
 
 
   const fetchArticles = async (pageNum: number) => {
+    if (refreshing) return;
     setRefreshing(true);
     try {
       const result = await axios.get(`/api/fetchNews?page=${pageNum}`);
@@ -96,7 +100,7 @@ const Home: React.FC = () => {
         })
       );
 
-      const forbiddenWords = ['死', '悲', '惜', '殺', '没', '故', '戦', '脅', '滅', '不', '争', '亡', '墓', '処分', 'イスラエル', 'ウクライナ', 'ハマス', 'ロシア'];
+      const forbiddenWords = ['死', '悲', '惜', '殺', '没', '故', '戦', '脅', '滅', '不','罪','争', '亡', '墓', '処分','遺体', 'イスラエル', 'ウクライナ', 'ハマス', 'ロシア'];
 
       // スコアが0以上で、特定の禁止ワードを含まない記事のみフィルタリング
       const filteredArticles = formattedArticles.filter(article => {
@@ -129,8 +133,14 @@ const Home: React.FC = () => {
 
         console.log('Final filtered articles count:', finalFilteredArticles.length); // 最終的な記事の数をログ出力
 
-        if (!user) {
-          finalFilteredArticles = finalFilteredArticles.slice(0, 2);// ログインしていない場合記事を3つに制限する
+        if (!user && finalFilteredArticles.length >= 5) {
+          setHasMore(false); // ログインしていない場合、5つの記事を取得したらそれ以上取得しない
+          return finalFilteredArticles.slice(0, 5); // 5つの記事に制限
+        }
+
+        if (user && finalFilteredArticles.length === prevArticles.length) {
+          // 既に表示された記事数と新しい記事数が同じであれば、これ以上記事がないと判断
+          setHasMore(false);
         }
 
         return finalFilteredArticles;
@@ -143,12 +153,18 @@ const Home: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    // 初回レンダリング時にfetchArticlesを実行
+    fetchArticles(1);//初期ページ1で記事を取得
+  }, []);
+
 
   useEffect(() => {
     if (hasMore) {
       fetchArticles(page);
     }
   }, [page, hasMore]);
+
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -178,35 +194,34 @@ const Home: React.FC = () => {
 
   return (
     <>
-      <Stack w='100%' alignItems='center' pt='240px'>
-        <Box p='40px' pt='20px' w='90%'>
-          <Flex flexDirection='column' alignItems='center' gap='5px'>
-            {articles.length === 0 && !refreshing && <p>No articles found.</p>}
+      <Box alignItems='center' pt={isCustomBreakpoint ? '260px' : '210px'} maxWidth={isMobile ? 'none' :'900px' } m='auto'>
+        <Flex p='40px' justifyContent='center'>
+          <Flex flexDirection='column' alignItems='center' gap='5px' w='100%'>
             {articles.map((article, index) => (
               <React.Fragment key={`${article.url}-${index}`}>
                 <Article article={article} />
-                {index < articles.length - 1 && <Divider borderColor='gray.700' />}
+                {index < articles.length - 1 && <Divider border='1px solid #a9a9a9' />}
               </React.Fragment>
             ))}
             {refreshing && <Spinner />}
             {!hasMore && !refreshing && (
-            <Text mt="20px" fontSize="lg" color="gray.500">
-            {user ? "次の記事をお楽しみに！" : (
-              <>
-                <Link href="/pages/signin" passHref>
-                  <Text display='inline'>
-                    サインイン
-                  </Text>
-                </Link>
-                <Text display='inline'>して続きを見る</Text>
-              </>
-            )}
-          </Text>
+              <Text mt="20px" fontSize="sm" color="gray.500">
+                {user ? "次の記事をお楽しみに！" : (
+                  <>
+                    <Link href="/pages/signin" passHref>
+                      <Text as="span" display='inline' color="blue.500">
+                        サインイン
+                      </Text>
+                    </Link>
+                    <Text as="span" display='inline'>して続きを見る</Text>
+                  </>
+                )}
+              </Text>
             )}
             <div ref={observerRef}></div>
           </Flex>
-        </Box>
-      </Stack>
+        </Flex>
+      </Box>
     </>
 
   );

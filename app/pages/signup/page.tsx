@@ -1,16 +1,17 @@
 'use client'
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth, db } from '@/utils/firebase/firebaseConfg';
-import { Box, Button, FormControl, Input, Link, Stack, Text, Flex, useToast } from '@chakra-ui/react'
+import { Box, Button, FormControl, Input, Link, Stack, Text, Flex, useToast, Spinner } from '@chakra-ui/react'
 import { useForm } from "react-hook-form"
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { FirebaseError } from 'firebase/app';
-import { supabase } from '@/utils/supabase/supabaseClient';
 import { doc, setDoc } from 'firebase/firestore';
+import { Darumadrop_One } from 'next/font/google';
 
 
+const darumadrop = Darumadrop_One({ subsets: ["latin"], weight: '400' });
 
   export const validationSchema = z.object({
     username: z
@@ -89,14 +90,18 @@ const SignUp = () => {
     }
   };
 
+  const handleBack = () => {
+    router.push('/');
+  };
+
 
 
   return (
     <>
       <form onSubmit={handleSubmit(handleSignUp)}>
-        <Stack maxWidth='70%' m='auto' textAlign='center' justifyContent='center' pt='100px'>
-          <Flex flexDirection='column' alignItems='center'>
-            <Text fontSize='30px'>Sign Up</Text>
+        <Stack maxWidth='70%' m='auto' textAlign='center' justifyContent='center'  pt='50px'>
+          <Flex flexDirection='column' alignItems='center'  pt='100px'>
+            <Text fontSize='4xl' sx={{ fontFamily: darumadrop.style.fontFamily }}>Sign Up</Text>
               <FormControl maxWidth='400px'>
                 <Stack justifyContent='center' flexDirection='column' alignItems='start' pt='20px' pb='20px'>
                   <Input
@@ -146,6 +151,9 @@ const SignUp = () => {
                 <Text pt='15px' fontSize='12px'>サインインはこちら</Text>
               </Link>
             </Box>
+            <Button mt='30px' variant='ghost' size='lg' onClick={handleBack} sx={{ fontFamily: darumadrop.style.fontFamily }}>
+              Back
+            </Button>
           </Flex>
         </Stack>
       </form>

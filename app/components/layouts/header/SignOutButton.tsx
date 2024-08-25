@@ -1,6 +1,10 @@
 import { auth } from '@/utils/firebase/firebaseConfg';
 import { Button, useToast } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
+import { Darumadrop_One } from 'next/font/google';
+
+const darumadrop = Darumadrop_One({ subsets: ["latin"], weight: '400' });
+
 
 const SignOutButton = () => {
   const toast = useToast();
@@ -15,7 +19,8 @@ const SignOutButton = () => {
         duration: 5000,
         isClosable: true,
       });
-      router.push('/'); // サインアウト後にトップページにリダイレクト
+      router.push('/');
+      window.location.reload();
     } catch (error) {
       toast({
         title: 'サインアウトに失敗しました',
@@ -27,7 +32,7 @@ const SignOutButton = () => {
   };
 
   return (
-    <Button colorScheme='teal' variant='ghost' onClick={handleSignOut}>
+    <Button colorScheme='gray' variant='ghost' size='lg' onClick={handleSignOut} sx={{ fontFamily: darumadrop.style.fontFamily }}>
       Sign Out
     </Button>
   );
