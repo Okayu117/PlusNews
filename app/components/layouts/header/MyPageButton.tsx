@@ -8,14 +8,17 @@ const darumadrop = Darumadrop_One({ subsets: ["latin"], weight: '400' });
 
 const MyPageButton = () => {
   return (
-    <>
-        <Button colorScheme='gray' variant='ghost' size='lg' sx={{ fontFamily: darumadrop.style.fontFamily }}>
-          <Link href='/pages/mypage' >
-          My Page
-          </Link>
-        </Button>
-
-    </>
+    <Button
+      as="a"
+      href="/pages/mypage"
+      colorScheme="gray"
+      variant="ghost"
+      size="lg"
+      sx={{ fontFamily: darumadrop.style.fontFamily }}
+      pl='15px'
+    >
+      My Page
+    </Button>
   )
 }
 

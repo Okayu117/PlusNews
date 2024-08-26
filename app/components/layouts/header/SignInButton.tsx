@@ -8,14 +8,17 @@ const darumadrop = Darumadrop_One({ subsets: ["latin"], weight: '400' });
 
 const SignInButton = () => {
   return (
-    <>
-        <Button colorScheme='gray' variant='ghost' size='lg' sx={{ fontFamily: darumadrop.style.fontFamily }}>
-          <Link href='/pages/signin'>
-          Sign In
-          </Link>
-        </Button>
-
-    </>
+    <Button
+      as="a"
+      href="/pages/signin"
+      colorScheme="gray"
+      variant="ghost"
+      size="lg"
+      sx={{ fontFamily: darumadrop.style.fontFamily }}
+      pl='15px'
+    >
+      Sign In
+    </Button>
   )
 }
 
