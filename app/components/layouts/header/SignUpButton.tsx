@@ -1,5 +1,4 @@
 import { Button } from '@chakra-ui/react'
-import Link from 'next/link'
 import React from 'react'
 import { Darumadrop_One } from 'next/font/google';
 
