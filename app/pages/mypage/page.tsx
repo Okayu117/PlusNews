@@ -273,13 +273,13 @@ const MyPage: React.FC = () => {
           <Text fontSize="lg" fontWeight="bold" mb="10px">保存した記事：</Text>
           {favorites.length > 0 ? (
             favorites.map((article) => (
-              <Flex key={article.url} alignItems="center" mb="10px">
+              <Flex key={article.url} alignItems="center" mb="15px" gap='5px'>
                 <Box flex="1">
                   <Link href={article.url} target="_blank" rel="noopener noreferrer">
-                    <Text fontWeight="bold">{article.title}</Text>
+                    <Text fontSize='sm' fontWeight="bold">{article.title}</Text>
                   </Link>
                 </Box>
-                <Button colorScheme="red" onClick={() => handleRemoveFavorite(article.url)}>お気に入り解除</Button>
+                <Button size='sm' colorScheme="red" onClick={() => handleRemoveFavorite(article.url)}>削除</Button>
               </Flex>
             ))
           ) : (

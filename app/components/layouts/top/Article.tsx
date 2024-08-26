@@ -59,17 +59,6 @@ const Article: React.FC<ArticleProps> = ({ article }) => {
         const data = userDoc.data();
         const favorites = data.favorites || [];
 
-        if (favorites.length >= 5) {
-          toast({
-            title: 'エラー',
-            description: 'お気に入りは5つまでしか保存できません。',
-            status: 'error',
-            duration: 5000,
-            isClosable: true,
-          });
-          return;
-        }
-
         await updateDoc(userRef, {
           favorites: arrayUnion({ title, source, url, publishedAt })
         });
