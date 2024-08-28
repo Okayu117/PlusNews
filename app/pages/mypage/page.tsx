@@ -8,6 +8,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import useAuth from '../../hooks/useAuth';
 import "../../globals.css";
 import { Darumadrop_One } from 'next/font/google';
+import { updateProfile } from "firebase/auth";
 
 
 const darumadrop = Darumadrop_One({ subsets: ["latin"], weight: '400' });
@@ -64,12 +65,19 @@ const MyPage: React.FC = () => {
     setEditingName(true);
   };
 
+
   const handleNameSave = async () => {
     if (user) {
       try {
+        // Firebase Authentication の displayName を更新
+        await updateProfile(user, {
+          displayName: displayName,
+        });
+        // Firestore の displayName と username を同じ値に更新
         const userRef = doc(db, 'users', user.uid);
         await updateDoc(userRef, {
-          displayName,
+          displayName: displayName,
+          username: displayName, // username にも同じ値を設定
         });
         setEditingName(false);
         toast({
@@ -89,6 +97,8 @@ const MyPage: React.FC = () => {
       }
     }
   };
+  
+
 
   const handleNameCancel = () => {
     setDisplayName(user?.displayName || '');
@@ -160,8 +170,8 @@ const MyPage: React.FC = () => {
   };
 
   const handleBack = () => {
-    router.push('/');
-  };
+    window.location.href = '/'; // トップページに直接リダイレクト
+  }
 
   if (loading) {
     return (

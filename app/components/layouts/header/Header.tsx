@@ -1,5 +1,5 @@
 'use client'
-import { Box, Flex, Img, Link, SkeletonCircle, Stack, Text, useBreakpointValue, IconButton, Menu, MenuButton, MenuList, MenuItem, useMediaQuery, useToast, Button } from '@chakra-ui/react'
+import { Box, Flex, Img, Link, SkeletonCircle, Stack, Text, IconButton, Menu, MenuButton, MenuList, MenuItem, useToast, Spinner } from '@chakra-ui/react'
 import { HamburgerIcon } from '@chakra-ui/icons'
 import React, { useEffect, useState } from 'react'
 import SignInButton from './SignInButton'
@@ -14,15 +14,14 @@ import { usePathname } from 'next/navigation'
 import NextLink from 'next/link'
 import { Darumadrop_One } from 'next/font/google';
 import { useRouter } from 'next/navigation';
+import { checkPrime } from 'crypto'
+
 
 
 const darumadrop = Darumadrop_One({ subsets: ["latin"], weight: '400' });
 
 const Header = () => {
-  const [isMobile] = useMediaQuery('(max-width: 768px)', {
-    ssr: false, // SSR中は無効化
-    fallback: false, // SSR中のデフォルトは「モバイルではない」
-  });
+
 
   const { user, loading } = useAuth();
   const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -31,34 +30,51 @@ const Header = () => {
   const [imagePosition, setImagePosition] = useState<string>('center');
   const pathname = usePathname();
   const router = useRouter();
+  const [isMobile, setIsMobile] = useState(false);
   const toast = useToast();
+
+  // レスポンシブ対応( useMediaQueryを使用しようとした時にSSRエラーが発生したため、window.matchMediaを使用)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const mediaQueryList = window.matchMedia('(max-width: 768px)');
+      setIsMobile(mediaQueryList.matches);
+      const handleMediaChange = (event: MediaQueryListEvent) => setIsMobile(event.matches);
+      mediaQueryList.addEventListener('change', handleMediaChange);
+      return () => {
+        mediaQueryList.removeEventListener('change', handleMediaChange);
+      };
+    }
+  }, []);
 
 
 
   useEffect(() => {
-    //監視処理の解除する関数
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setIsLoggedIn(true)
-        setUsername(user.displayName || 'ゲスト')
-        } else {
-          setIsLoggedIn(false)
-          setUsername('')
-        }
-      })
-      return () => unsubscribe()
-      }, [])
+    if (user) {
+      console.log("User:", user);
+      setIsLoggedIn(true);
+      setUsername(user.displayName || 'ゲスト');
+      console.log("username:", username);
+    } else {
+      setIsLoggedIn(false);
+      setUsername('');
+    }
+  }, [user]);
+
 
       useEffect(() => {
         const fetchProfileImage = async () => {
           if (user) {
             const db = getFirestore();
+            console.log("User data from Firestore:", db);
             const userRef = doc(db, "users", user.uid);
+            console.log("useRef:", userRef);
             const userDoc = await getDoc(userRef);
-
+            console.log("userDoc:", userDoc);
             if (userDoc.exists()) {
               const userData = userDoc.data();
+              console.log("User data from Firestore:", userData);
               setProfileImage(userData?.profileImage || null);
+              console.log("profileImage:", profileImage);
               setImagePosition(userData?.imagePosition || 'center'); // 画像ポジションを設定
             }
           }
@@ -66,6 +82,19 @@ const Header = () => {
 
         fetchProfileImage();
       }, [user]);
+
+
+      const handleMyPage = () => {
+        router.push('/pages/mypage');
+      }
+
+      const handleSignIn = () => {
+        router.push('/pages/signin');
+      }
+
+      const handleSignUp = () => {
+        router.push('/pages/signup');
+      }
 
       const handleSignOut = async () => {
         try {
@@ -77,7 +106,7 @@ const Header = () => {
             isClosable: true,
           });
           router.push('/');
-          window.location.reload();
+          window.location.reload(); // ページをリロード
         } catch (error) {
           toast({
             title: 'サインアウトに失敗しました',
@@ -87,6 +116,14 @@ const Header = () => {
           });
         }
       };
+
+      if (loading) {
+        return (
+          <Flex justifyContent='center' alignItems='center' height='100vh'>
+            <Spinner size='md' />
+          </Flex>
+        );
+      }
 
         // サインイン・サインアップページではヘッダーの一部を非表示にする
     const isAuthPage = pathname === '/pages/signin' || pathname === '/pages/signup' || pathname === '/pages/mypage';
@@ -116,20 +153,44 @@ const Header = () => {
                 <MenuList width='110px' minWidth='none'>
                   {isLoggedIn ? (
                     <Flex flexDirection='column' alignItems='flex-start'>
-                      <MenuItem>
-                        <MyPageButton />
+                      <MenuItem
+                        fontSize="lg"
+                        sx={{ fontFamily: darumadrop.style.fontFamily }}
+                        pl='15px'
+                        onClick={handleMyPage}
+                        justifyContent='center'
+                      >
+                        My Page
                       </MenuItem>
-                      <MenuItem>
-                        <SignOutButton />
+                      <MenuItem
+                        fontSize="lg"
+                        sx={{ fontFamily: darumadrop.style.fontFamily }}
+                        pl='15px'
+                        onClick={handleSignOut}
+                        justifyContent='center'
+                      >
+                        Sign Out
                       </MenuItem>
                     </Flex>
                   ) : (
                     <>
-                      <MenuItem>
-                        <SignInButton />
+                      <MenuItem
+                        fontSize="lg"
+                        sx={{ fontFamily: darumadrop.style.fontFamily }}
+                        pl='15px'
+                        onClick={handleSignIn}
+                        justifyContent='center'
+                      >
+                        Sign In
                       </MenuItem>
-                      <MenuItem>
-                        <SignUpButton />
+                      <MenuItem
+                        fontSize="lg"
+                        sx={{ fontFamily: darumadrop.style.fontFamily }}
+                        pl='15px'
+                        onClick={handleSignUp}
+                        justifyContent='center'
+                      >
+                        Sign Up
                       </MenuItem>
                     </>
                   )}
@@ -155,7 +216,7 @@ const Header = () => {
           </Flex>
         </Box>
         {!isAuthPage && (
-        <Box pb={isMobile ? '15px' : '30px'}>
+        <Box pb={isMobile ? '10px' : '30px'}>
           <Flex
             w='100%'
             justifyContent='center'

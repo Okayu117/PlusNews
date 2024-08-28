@@ -73,7 +73,7 @@ const Home: React.FC = () => {
     setRefreshing(true);
     try {
       const result = await axios.get(`/api/fetchNews?page=${pageNum}`);
-      console.log('Fetched articles from API:', result.data.length); // APIから取得した記事の数をログ出力
+      // console.log('Fetched articles from API:', result.data.length); // APIから取得した記事の数をログ出力
 
       if (result.data.length === 0) {
         setHasMore(false); // APIから新しい記事が取得されなかった場合、hasMoreをfalseに設定
@@ -86,7 +86,7 @@ const Home: React.FC = () => {
           const combinedText = `${article.title} ${article.description || ''}`;
           const sentiment = await analyzeSentiment(combinedText);
 
-          console.log(`Article: "${article.title}" - Sentiment Score: ${sentiment.score}, Magnitude: ${sentiment.magnitude}`);
+          // console.log(`Article: "${article.title}" - Sentiment Score: ${sentiment.score}, Magnitude: ${sentiment.magnitude}`);
 
           return {
             title: article.title,
@@ -106,13 +106,8 @@ const Home: React.FC = () => {
       const filteredArticles = formattedArticles.filter(article => {
         const isValidScore = article.sentimentScore !== undefined && article.sentimentScore >= 0;
         const doesNotContainForbiddenWords = !forbiddenWords.some(word => article.title.includes(word) || article.description.includes(word));
-
-        console.log(`Filtering article: "${article.title}" with score: ${article.sentimentScore}, isValid: ${isValidScore}, contains forbidden words: ${!doesNotContainForbiddenWords}`);
-
         return isValidScore && doesNotContainForbiddenWords;
       });
-
-      console.log('Filtered articles count:', filteredArticles.length); // フィルタリングされた記事の数をログ出力
 
       // 重複記事をURLで排除（1回目）
       const uniqueArticles = filteredArticles.filter((article, index, self) =>
@@ -131,7 +126,6 @@ const Home: React.FC = () => {
           return isValidScore && isUnique;
         });
 
-        console.log('Final filtered articles count:', finalFilteredArticles.length); // 最終的な記事の数をログ出力
 
         if (!user && finalFilteredArticles.length >= 5) {
           setHasMore(false); // ログインしていない場合、5つの記事を取得したらそれ以上取得しない
@@ -205,18 +199,18 @@ const Home: React.FC = () => {
             ))}
             {refreshing && <Spinner />}
             {!hasMore && !refreshing && (
-              <Text mt="20px" fontSize="sm" color="gray.500">
-                {user ? "次の記事をお楽しみに！" : (
+              <Box>
+                {user ? <Text mt="20px" fontSize="sm" color="gray.500">"次の記事をお楽しみに！"</Text> : (
                   <>
                     <Link href="/pages/signin" passHref>
-                      <Text as="span" display='inline' color="blue.500">
+                      <Text display='inline' color="blue.500">
                         サインイン
                       </Text>
                     </Link>
                     <Text as="span" display='inline'>して続きを見る</Text>
                   </>
                 )}
-              </Text>
+              </Box>
             )}
             <div ref={observerRef}></div>
           </Flex>

@@ -20,7 +20,7 @@ const SignOutButton = () => {
         isClosable: true,
       });
       router.push('/');
-      window.location.reload();
+      window.location.reload();// ページをリロード
     } catch (error) {
       toast({
         title: 'サインアウトに失敗しました',

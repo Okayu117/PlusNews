@@ -60,7 +60,6 @@ export default function SignInPage() {
         duration: 5000,
         isClosable: true,
       });
-
       router.push('/');
     } catch (e) {
       if (e instanceof FirebaseError) {
