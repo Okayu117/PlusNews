@@ -1,7 +1,7 @@
 'use client'
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth, db } from '@/utils/firebase/firebaseConfg';
-import { Box, Button, FormControl, Input, Link, Stack, Text, Flex, useToast, Spinner } from '@chakra-ui/react'
+import { Box, Button, FormControl, Input, Link, Stack, Text, Flex, useToast } from '@chakra-ui/react'
 import { useForm } from "react-hook-form"
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';

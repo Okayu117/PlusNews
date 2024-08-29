@@ -5,16 +5,13 @@ import React, { useEffect, useState } from 'react'
 import SignInButton from './SignInButton'
 import SignUpButton from './SignUpButton'
 import MyPageButton from './MyPageButton'
-import { onAuthStateChanged } from 'firebase/auth'
 import { auth } from '@/utils/firebase/firebaseConfg'
 import SignOutButton from './SignOutButton'
 import { doc, getDoc, getFirestore } from 'firebase/firestore'
 import useAuth from '@/app/hooks/useAuth'
 import { usePathname } from 'next/navigation'
-import NextLink from 'next/link'
 import { Darumadrop_One } from 'next/font/google';
 import { useRouter } from 'next/navigation';
-import { checkPrime } from 'crypto'
 
 
 
