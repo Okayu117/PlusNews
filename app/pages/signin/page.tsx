@@ -128,9 +128,6 @@ export default function SignInPage() {
               </Button>
             </FormControl>
             <Box>
-              <Link href='/reset-password'>
-                <Text pt='15px' fontSize='12px'>パスワードを忘れた方はこちら</Text>
-              </Link>
               <Link href='/signup'>
                 <Text pt='15px' fontSize='12px'>アカウントを作成する</Text>
               </Link>

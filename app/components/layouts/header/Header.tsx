@@ -31,7 +31,8 @@ const Header = () => {
   const pathname = usePathname();
   const router = useRouter();
   const [isMobile, setIsMobile] = useState(false);
-  const toast = useToast();
+  const toast = useToast()
+  const [imageLoading, setImageLoading] = useState(true);
 
   // レスポンシブ対応( useMediaQueryを使用しようとした時にSSRエラーが発生したため、window.matchMediaを使用)
   useEffect(() => {
@@ -64,6 +65,7 @@ const Header = () => {
       useEffect(() => {
         const fetchProfileImage = async () => {
           if (user) {
+            setImageLoading(true); // ロード開始
             const db = getFirestore();
             console.log("User data from Firestore:", db);
             const userRef = doc(db, "users", user.uid);
@@ -77,6 +79,7 @@ const Header = () => {
               console.log("profileImage:", profileImage);
               setImagePosition(userData?.imagePosition || 'center'); // 画像ポジションを設定
             }
+            setImageLoading(false); // ロード終了
           }
         };
 
@@ -226,15 +229,18 @@ const Header = () => {
           >
             <Img src='/title_img1.png' width={isMobile ? '45%' : '280px'} />
             <Box width={isMobile ? '90px' : '150px'} h={isMobile ? '90px' : '150px'}>
-            {loading ? (
-              <SkeletonCircle w='100%' h='100%'/>
-            ) : (
-              <Img
-                w='100%' h='100%' objectFit='cover' borderRadius='50%'
-                src={profileImage || '/cat.png'} // デフォルトの画像を指定
-                objectPosition={imagePosition}
-              />
-            )}
+            {imageLoading ? (
+                  <SkeletonCircle w='100%' h='100%' />
+                ) : (
+                  <Img
+                    w='100%'
+                    h='100%'
+                    objectFit='cover'
+                    borderRadius='50%'
+                    src={profileImage || '/cat.png'}
+                    objectPosition={imagePosition}
+                  />
+                )}
             </Box>
             <Img src='/title_img2.png' width={isMobile ? '45%' : '280px'} />
           </Flex>
