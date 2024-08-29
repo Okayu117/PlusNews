@@ -73,7 +73,7 @@ const Home: React.FC = () => {
     setRefreshing(true);
     try {
       const result = await axios.get(`/api/fetchNews?page=${pageNum}`);
-      // console.log('Fetched articles from API:', result.data.length); // APIから取得した記事の数をログ出力
+      console.log('Fetched articles from API:', result.data.length); // APIから取得した記事の数をログ出力
 
       if (result.data.length === 0) {
         setHasMore(false); // APIから新しい記事が取得されなかった場合、hasMoreをfalseに設定
@@ -86,7 +86,7 @@ const Home: React.FC = () => {
           const combinedText = `${article.title} ${article.description || ''}`;
           const sentiment = await analyzeSentiment(combinedText);
 
-          // console.log(`Article: "${article.title}" - Sentiment Score: ${sentiment.score}, Magnitude: ${sentiment.magnitude}`);
+          console.log(`Article: "${article.title}" - Sentiment Score: ${sentiment.score}, Magnitude: ${sentiment.magnitude}`);
 
           return {
             title: article.title,
@@ -104,7 +104,7 @@ const Home: React.FC = () => {
 
       // スコアが0以上で、特定の禁止ワードを含まない記事のみフィルタリング
       const filteredArticles = formattedArticles.filter(article => {
-        const isValidScore = article.sentimentScore !== undefined && article.sentimentScore >= 0;
+        const isValidScore = article.sentimentScore !== undefined && article.sentimentScore >= -0.1;
         const doesNotContainForbiddenWords = !forbiddenWords.some(word => article.title.includes(word) || article.description.includes(word));
         return isValidScore && doesNotContainForbiddenWords;
       });
@@ -116,7 +116,7 @@ const Home: React.FC = () => {
 
       setArticles((prevArticles) => {
         // 前の状態と新しい記事の両方から、スコアが0以上の記事だけを残す
-        const filteredPrevArticles = prevArticles.filter(article => article.sentimentScore !== undefined && article.sentimentScore >= 0);
+        const filteredPrevArticles = prevArticles.filter(article => article.sentimentScore !== undefined && article.sentimentScore >= -0.1);
         const combinedArticles = [...filteredPrevArticles, ...uniqueArticles];
 
         // 再度スコアが0以上かつ重複を排除（2回目のフィルタリング）
