@@ -32,7 +32,7 @@ const Header = () => {
   const router = useRouter();
   const [isMobile, setIsMobile] = useState(false);
   const toast = useToast()
-  const [imageLoading, setImageLoading] = useState(true);
+  const [imageLoading, setImageLoading] = useState(false);
 
   // レスポンシブ対応( useMediaQueryを使用しようとした時にSSRエラーが発生したため、window.matchMediaを使用)
   useEffect(() => {
@@ -58,6 +58,7 @@ const Header = () => {
     } else {
       setIsLoggedIn(false);
       setUsername('');
+      setProfileImage(null);
     }
   }, [user]);
 
