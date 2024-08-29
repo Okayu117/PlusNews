@@ -10,7 +10,13 @@ type Data = {
 // APIハンドラ
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
   if (req.method === 'POST') {
-    const client = new LanguageServiceClient();
+    const client = new LanguageServiceClient({
+      credentials: {
+        client_email: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_EMAIL,
+        private_key: process.env.NEXT_PUBLIC_GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      },
+      projectId: process.env.NEXT_PUBLIC_GOOGLE_PROJECT_ID,
+    });
     const { text } = req.body;
 
     const document = {
