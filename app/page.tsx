@@ -200,7 +200,7 @@ const Home: React.FC = () => {
             {refreshing && <Spinner />}
             {!hasMore && !refreshing && (
               <Box>
-                {user ? <Text mt="20px" fontSize="sm" color="gray.500">"次の記事をお楽しみに！"</Text> : (
+                {user ? <Text mt="20px" fontSize="sm" color="gray.500">次の記事をお楽しみに！</Text> : (
                   <>
                     <Link href="/pages/signin" passHref>
                       <Text display='inline' color="blue.500">
