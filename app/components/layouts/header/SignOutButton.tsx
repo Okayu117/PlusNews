@@ -1,4 +1,4 @@
-import { auth } from '@/utils/firebase/firebaseConfg';
+import { auth } from '@/utils/firebase/firebaseConfig';
 import { Button, useToast } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 import { Darumadrop_One } from 'next/font/google';

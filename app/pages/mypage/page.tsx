@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Flex, Stack, Box, Button, Input, Text, useToast, Spinner, Img, Link, useBreakpointValue } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 import { getDoc, doc, updateDoc } from 'firebase/firestore';
-import { db, storage } from '../../../utils/firebase/firebaseConfg';
+import { db, storage } from '../../../utils/firebase/firebaseConfig';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import useAuth from '../../hooks/useAuth';
 import "../../globals.css";

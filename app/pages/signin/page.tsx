@@ -1,6 +1,6 @@
 'use client'
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth, db } from '@/utils/firebase/firebaseConfg';
+import { auth, db } from '@/utils/firebase/firebaseConfig';
 import { Box, Button, FormControl, Input, Link, Stack, Text, Flex, useToast } from '@chakra-ui/react'
 import { useForm } from "react-hook-form"
 import { z } from 'zod';

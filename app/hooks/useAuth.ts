@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '@/utils/firebase/firebaseConfg';
+import { auth } from '@/utils/firebase/firebaseConfig';
 
 const useAuth = () => {
   const [user, setUser] = useState<any>(null);

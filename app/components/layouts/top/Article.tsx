@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Flex, Text, Button, useToast, Link, useBreakpointValue } from '@chakra-ui/react';
 import { ArticleType } from '../../../page';
-import { db } from '../../../../utils/firebase/firebaseConfg';
+import { db } from '../../../../utils/firebase/firebaseConfig';
 import { doc, updateDoc, arrayUnion, getDoc } from 'firebase/firestore';
 import  useAuth  from '../../../hooks/useAuth'; // ユーザー認証を管理するカスタムフックを想定
 import { Icon } from '@chakra-ui/react'
