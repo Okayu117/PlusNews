@@ -13,7 +13,7 @@ import { Darumadrop_One } from 'next/font/google';
 
 const darumadrop = Darumadrop_One({ subsets: ["latin"], weight: '400' });
 
-  export const validationSchema = z.object({
+  const validationSchema = z.object({
     username: z
       .string()
       .min(2, { message: '2文字以上入力してください' })
