@@ -2,11 +2,8 @@
   "version": 2,
   "builds": [
     {
-      "src": "package.json",
-      "use": "@vercel/node",
-      "config": {
-        "command": "npm run vercel-build"
-      }
+      "src": "next.config.js",
+      "use": "@vercel/next"
     }
   ]
 }
