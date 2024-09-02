@@ -46,26 +46,27 @@ const Home: React.FC = () => {
     fetchProfileImage();
   }, [user]);
 
-
-  const analyzeSentiment = async (text: string) => {
-    try {
-      const response = await fetch('/api/analyzeSentiment', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text }),
-      });
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      const data = await response.json();
-      return { score: data.score, magnitude: data.magnitude };
-    } catch (error) {
-      console.error('Error analyzing sentiment:', error);
-      return { score: 0, magnitude: 0 };
-    }
-  };
+// 以下のコードは、google-cloud-languageを使用してテキストの感情分析を行う場合に使用します
+  // const analyzeSentiment = async (text: string) => {
+  //   try {
+  //     const response = await fetch('/api/analyzeSentiment', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({ text }),
+  //     });
+  //     if (!response.ok) {
+  //       throw new Error('Network response was not ok');
+  //     }
+  //     const data = await response.json();
+      // return { score: data.score, magnitude: data.magnitude };
+  //     return { score: 0, magnitude: 0 };
+  //   } catch (error) {
+  //     console.error('Error analyzing sentiment:', error);
+  //     return { score: 0, magnitude: 0 };
+  //   }
+  // };
 
 
   const fetchArticles = async (pageNum: number) => {
@@ -84,17 +85,17 @@ const Home: React.FC = () => {
       const formattedArticles = await Promise.all(
         result.data.map(async (article: any) => {
           const combinedText = `${article.title} ${article.description || ''}`;
-          const sentiment = await analyzeSentiment(combinedText);
+          // const sentiment = await analyzeSentiment(combinedText);
 
-          console.log(`Article: "${article.title}" - Sentiment Score: ${sentiment.score}, Magnitude: ${sentiment.magnitude}`);
+          // console.log(`Article: "${article.title}" - Sentiment Score: ${sentiment.score}, Magnitude: ${sentiment.magnitude}`);
 
           return {
             title: article.title,
             source: article.source ? article.source : 'Unknown Source',
             publishedAt: article.pubDate,
             url: article.link,
-            sentimentScore: sentiment.score,
-            sentimentMagnitude: sentiment.magnitude,
+            // sentimentScore: sentiment.score,
+            // sentimentMagnitude: sentiment.magnitude,
             description: article.description || '', // descriptionをフィルタリングで使うため追加
           };
         })
@@ -104,9 +105,10 @@ const Home: React.FC = () => {
 
       // スコアが0以上で、特定の禁止ワードを含まない記事のみフィルタリング
       const filteredArticles = formattedArticles.filter(article => {
-        const isValidScore = article.sentimentScore !== undefined && article.sentimentScore >= -0.1;
+        // const isValidScore = article.sentimentScore !== undefined && article.sentimentScore >= -0.1;
         const doesNotContainForbiddenWords = !forbiddenWords.some(word => article.title.includes(word) || article.description.includes(word));
-        return isValidScore && doesNotContainForbiddenWords;
+        // return isValidScore && doesNotContainForbiddenWords;
+        return doesNotContainForbiddenWords;
       });
 
       // 重複記事をURLで排除（1回目）
@@ -116,14 +118,16 @@ const Home: React.FC = () => {
 
       setArticles((prevArticles) => {
         // 前の状態と新しい記事の両方から、スコアが0以上の記事だけを残す
-        const filteredPrevArticles = prevArticles.filter(article => article.sentimentScore !== undefined && article.sentimentScore >= -0.1);
-        const combinedArticles = [...filteredPrevArticles, ...uniqueArticles];
+        // const filteredPrevArticles = prevArticles.filter(article => article.sentimentScore !== undefined && article.sentimentScore >= -0.1);
+        // const combinedArticles = [...filteredPrevArticles, ...uniqueArticles];
+        const combinedArticles = [...prevArticles, ...uniqueArticles];
 
         // 再度スコアが0以上かつ重複を排除（2回目のフィルタリング）
         let finalFilteredArticles = combinedArticles.filter((article, index, self) => {
-          const isValidScore = article.sentimentScore !== undefined && article.sentimentScore >= 0;
+          // const isValidScore = article.sentimentScore !== undefined && article.sentimentScore >= 0;
           const isUnique = index === self.findIndex((a) => a.url === article.url);
-          return isValidScore && isUnique;
+          // return isValidScore && isUnique;
+          return isUnique;
         });
 
 
