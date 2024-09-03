@@ -10,10 +10,10 @@ const inter = Inter({ subsets: ["latin"] });
 const darumadrop = Noto_Sans_JP({ subsets: ["latin"],
   weight: '400' });
 
-export const metadata: Metadata = {
-  title: "PlusNews",
-  description: "あなたにとってプラスになる情報をお届けします。",
-};
+  export const metadata: Metadata = {
+    title: "ぜったいにおちこまない リアルタイムニュース",
+    description: "悲しいニュースは読みたくない！自分を守りたい！そんな感受性豊かな繊細さんのためのニュースアプリです。",
+  };
 
 export default function RootLayout({
   children,
