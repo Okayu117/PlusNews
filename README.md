@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Name（リポジトリ/プロジェクト/OSSなどの名前）
 
-## Getting Started
+分かりやすくてカッコイイ名前をつける（今回は"hoge"という名前をつける）
 
-First, run the development server:
+"hoge"が何かを簡潔に紹介する
+
+# DEMO
+
+"hoge"の魅力が直感的に伝えわるデモ動画や図解を載せる
+
+# Features
+
+"hoge"のセールスポイントや差別化などを説明する
+
+# Requirement
+
+"hoge"を動かすのに必要なライブラリなどを列挙する
+
+* huga 3.5.2
+* hogehuga 1.0.2
+
+# Installation
+
+Requirementで列挙したライブラリなどのインストール方法を説明する
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pip install huga_package
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+# Usage
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+DEMOの実行方法など、"hoge"の基本的な使い方を説明する
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+```bash
+git clone https://github.com/hoge/~
+cd examples
+python demo.py
+```
 
-## Learn More
+# Note
 
-To learn more about Next.js, take a look at the following resources:
+注意点などがあれば書く
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Author
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+作成情報を列挙する
 
-## Deploy on Vercel
+* 作成者
+* 所属
+* E-mail
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# License
+ライセンスを明示する
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+"hoge" is under [MIT license](https://en.wikipedia.org/wiki/MIT_License).
+
+社内向けなら社外秘であることを明示してる
+
+"hoge" is Confidential.
