@@ -74,6 +74,8 @@ const Home: React.FC = () => {
     setRefreshing(true);
     try {
       const result = await axios.get(`/api/fetchNews?page=${pageNum}`);
+      console.log("APIレスポンスデータ:", result.data);
+
       console.log('Fetched articles from API:', result.data.length); // APIから取得した記事の数をログ出力
 
       if (result.data.length === 0) {
@@ -131,15 +133,17 @@ const Home: React.FC = () => {
         });
 
 
-        if (!user && finalFilteredArticles.length >= 5) {
+        if (!user && finalFilteredArticles.length >= 10) {
           setHasMore(false); // ログインしていない場合、5つの記事を取得したらそれ以上取得しない
-          return finalFilteredArticles.slice(0, 5); // 5つの記事に制限
+          return finalFilteredArticles.slice(0, 10); // 5つの記事に制限
         }
 
-        if (user && finalFilteredArticles.length === prevArticles.length) {
-          // 既に表示された記事数と新しい記事数が同じであれば、これ以上記事がないと判断
+
+        if (user && finalFilteredArticles.length <= prevArticles.length && uniqueArticles.length === 0) {
+          // 既に表示された記事数と新しい記事数が同じか少ない場合に、もう記事がないと判断
           setHasMore(false);
         }
+
 
         return finalFilteredArticles;
       });
