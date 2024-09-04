@@ -1,11 +1,12 @@
 # 絶対に落ち込まない リアルタイムニュース
 
+## サービスへの想い
 ニュースアプリを開くと、知りたくなくても目に飛び込んてくる悲しいニュースの数々・・・<br>
 知るべきなのは分かっていても、自分に余裕がない時は読むだけで暗い気持ちになり更に追い込まれてしまう。<br>
-今日ぐらいは悲しいニュースは読みたくない！自分を守りたい！そんな感受性豊かな繊細さんのためのニュースアプリです。<br>
+今日ぐらいは悲しいニュースは読みたくない！自分を守りたい！そんな感受性豊かな繊細さんを助けるニュースアプリです。<br>
 
 
-## DEMO
+## 機能説明
 #### ホーム画面
 * 取得されるニュース記事はポジティブなニュースのみです。<br>
 * サインインせずとも10件までのニュースを見ることができます。<br>
@@ -24,8 +25,7 @@
 <img width="1270" alt="スクリーンショット 2024-09-03 22 39 40" src="https://github.com/user-attachments/assets/14eb200e-7497-4e0b-9386-dd640e882110">
 
 
-
-## Features
+## 主な特徴
 #### ★ネガティブな記事を排除するフィルタリング
 自動的に悲しいニュースを排除し、ポジティブなニュースだけを表示します。<br>
 ユーザーがメンタル面で疲れを感じることなく、ニュースを楽しむことができます。<br> 
@@ -46,51 +46,16 @@
 ![Static Badge](https://img.shields.io/badge/Next.js-ffff00)
 ![Static Badge](https://img.shields.io/badge/Firebase-ff8c00)
 ![Static Badge](https://img.shields.io/badge/ChakraUI-ee82ee)
+![Static Badge](https://img.shields.io/badge/TypeScript-87ceeb)
 
 ### API
 - #### [Google Cloud Natural Language API](https://cloud.google.com/natural-language/docs)
 **用途**: 各記事の感情分析を行い、ポジティブなニュースだけを表示するようにフィルタリングしています。<br>
 - #### RSSフィールド
 **用途**: 複数のニュースサイトから提供されるRSSフィードを使用して、最新のニュース記事を取得しています。<br>
-リアルタイムでニュースを表示するために、RSSを定期的にフェッチして記事データをアプリ内に反映させています。。<br>
+リアルタイムでニュースを表示するために、RSSを定期的にフェッチして記事データをアプリ内に反映させています。<br>
 
 
+## 注意事項
+Google Cloud Natural Language APIは料金の兼ね合いで現在、使用に制限をかけています。<br>
 
-# Installation
-
-Requirementで列挙したライブラリなどのインストール方法を説明する
-
-```bash
-pip install huga_package
-```
-
-# Usage
-
-DEMOの実行方法など、"hoge"の基本的な使い方を説明する
-
-```bash
-git clone https://github.com/hoge/~
-cd examples
-python demo.py
-```
-
-# Note
-
-注意点などがあれば書く
-
-# Author
-
-作成情報を列挙する
-
-* 作成者
-* 所属
-* E-mail
-
-# License
-ライセンスを明示する
-
-"hoge" is under [MIT license](https://en.wikipedia.org/wiki/MIT_License).
-
-社内向けなら社外秘であることを明示してる
-
-"hoge" is Confidential.
