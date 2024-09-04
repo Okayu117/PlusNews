@@ -40,18 +40,18 @@
 また読み返したくなるようなポジティブな記事を見つけたら、制限なく保存ができ好きな時に読むことができます。<br>
 
 
-## 使用技術一覧
+### 使用技術一覧
 
 ![Static Badge](https://img.shields.io/badge/React-98fb98)
 ![Static Badge](https://img.shields.io/badge/Next.js-ffff00)
 ![Static Badge](https://img.shields.io/badge/Firebase-ff8c00)
 ![Static Badge](https://img.shields.io/badge/ChakraUI-ee82ee)
 
-#### API
-#####　- [Google Cloud Natural Language API](https://cloud.google.com/natural-language/docs)
-- **用途**: 各記事の感情分析を行い、ポジティブなニュースだけを表示するようにフィルタリングしています。<br>
-#####　- RSSフィールド
-- **用途**: 複数のニュースサイトから提供されるRSSフィードを使用して、最新のニュース記事を取得しています。<br>
+### API
+- #### [Google Cloud Natural Language API](https://cloud.google.com/natural-language/docs)
+**用途**: 各記事の感情分析を行い、ポジティブなニュースだけを表示するようにフィルタリングしています。<br>
+- #### RSSフィールド
+**用途**: 複数のニュースサイトから提供されるRSSフィードを使用して、最新のニュース記事を取得しています。<br>
 リアルタイムでニュースを表示するために、RSSを定期的にフェッチして記事データをアプリ内に反映させています。。<br>
 
 
