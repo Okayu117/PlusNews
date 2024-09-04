@@ -40,14 +40,13 @@
 また読み返したくなるようなポジティブな記事を見つけたら、制限なく保存ができ好きな時に読むことができます。<br>
 
 
-## Requirement
+## 使用技術一覧
 
-以下のライブラリやツールが必要です：
-React 18.0.0
-Next.js 13.0.0
-Firebase
-Chakra UI
-Axios
+![Static Badge](https://img.shields.io/badge/React-98fb98)
+![Static Badge](https://img.shields.io/badge/Next.js-ffff00)
+![Static Badge](https://img.shields.io/badge/Firebase-ff8c00)
+![Static Badge](https://img.shields.io/badge/ChakraUI-ee82ee)
+
 
 # Installation
 
